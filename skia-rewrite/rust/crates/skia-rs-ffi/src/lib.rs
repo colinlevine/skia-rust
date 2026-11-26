@@ -3,6 +3,7 @@
 //! `unsafe` is strictly restricted to this boundary crate; all logic crates
 //! use `#![forbid(unsafe_code)]`.
 
+pub mod core_types;
 pub mod geometry;
 pub mod geometry_curves;
 pub mod math;

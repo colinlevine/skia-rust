@@ -23,6 +23,8 @@ pub struct Rect {
 }
 
 impl IRect {
+    pub const EMPTY: Self = Self::make_empty();
+
     #[inline]
     pub const fn make_empty() -> Self {
         Self {
@@ -40,6 +42,26 @@ impl IRect {
             top,
             right,
             bottom,
+        }
+    }
+
+    #[inline]
+    pub const fn from_ltrb(left: i32, top: i32, right: i32, bottom: i32) -> Self {
+        Self::make_ltrb(left, top, right, bottom)
+    }
+
+    #[inline]
+    pub const fn from_wh(w: i32, h: i32) -> Self {
+        Self::make_ltrb(0, 0, w, h)
+    }
+
+    #[inline]
+    pub const fn make_offset(self, dx: i32, dy: i32) -> Self {
+        Self {
+            left: self.left.saturating_add(dx),
+            top: self.top.saturating_add(dy),
+            right: self.right.saturating_add(dx),
+            bottom: self.bottom.saturating_add(dy),
         }
     }
 
@@ -180,6 +202,8 @@ impl IRect {
 }
 
 impl Rect {
+    pub const EMPTY: Self = Self::make_empty();
+
     #[inline]
     pub const fn make_empty() -> Self {
         Self {
@@ -198,6 +222,46 @@ impl Rect {
             right,
             bottom,
         }
+    }
+
+    #[inline]
+    pub const fn new(left: f32, top: f32, right: f32, bottom: f32) -> Self {
+        Self::make_ltrb(left, top, right, bottom)
+    }
+
+    #[inline]
+    pub const fn from_ltrb(left: f32, top: f32, right: f32, bottom: f32) -> Self {
+        Self::make_ltrb(left, top, right, bottom)
+    }
+
+    #[inline]
+    pub fn round_out(self) -> IRect {
+        IRect::make_ltrb(
+            crate::float_saturate2int(self.left.floor()),
+            crate::float_saturate2int(self.top.floor()),
+            crate::float_saturate2int(self.right.ceil()),
+            crate::float_saturate2int(self.bottom.ceil()),
+        )
+    }
+
+    #[inline]
+    pub fn round_in(self) -> IRect {
+        IRect::make_ltrb(
+            crate::float_saturate2int(self.left.ceil()),
+            crate::float_saturate2int(self.top.ceil()),
+            crate::float_saturate2int(self.right.floor()),
+            crate::float_saturate2int(self.bottom.floor()),
+        )
+    }
+
+    #[inline]
+    pub fn round(self) -> IRect {
+        IRect::make_ltrb(
+            crate::scalar_round_to_int(self.left),
+            crate::scalar_round_to_int(self.top),
+            crate::scalar_round_to_int(self.right),
+            crate::scalar_round_to_int(self.bottom),
+        )
     }
 
     #[inline]

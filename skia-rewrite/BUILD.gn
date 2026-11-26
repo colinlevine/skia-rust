@@ -2166,6 +2166,35 @@ skia_source_set("core") {
       "src/rust_bridge/SkVertices_rust.cpp",
     ]
   }
+
+  if (skia_rust_core_types) {
+    sources -= [
+      "//src/core/SkBlurMask.cpp",
+      "//src/core/SkBuffer.cpp",
+      "//src/core/SkData.cpp",
+      "//src/core/SkDataTable.cpp",
+      "//src/core/SkDescriptor.cpp",
+      "//src/core/SkFlattenable.cpp",
+      "//src/core/SkGaussFilter.cpp",
+      "//src/core/SkMask.cpp",
+      "//src/core/SkMaskCache.cpp",
+      "//src/core/SkMaskGamma.cpp",
+      "//src/core/SkPaint.cpp",
+      "//src/core/SkPaintPriv.cpp",
+      "//src/core/SkReadBuffer.cpp",
+      "//src/core/SkStream.cpp",
+      "//src/core/SkString.cpp",
+      "//src/core/SkStringUtils.cpp",
+      "//src/core/SkWriteBuffer.cpp",
+      "//src/core/SkWriter32.cpp",
+    ]
+    sources += [
+      "src/rust_bridge/SkDataStream_rust.cpp",
+      "src/rust_bridge/SkBuffersString_rust.cpp",
+      "src/rust_bridge/SkPaintDescriptor_rust.cpp",
+      "src/rust_bridge/SkMaskBlur_rust.cpp",
+    ]
+  }
 }
 
 skia_component("skia") {

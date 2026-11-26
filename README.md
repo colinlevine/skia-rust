@@ -4,18 +4,18 @@ A safe Rust rewrite of Google's [Skia](https://skia.org/) 2D graphics library, v
 
 ## Progress
 
-> **Current Step:** **Phase 1 — Layer 2 (Core Primitives & Data Structures)** — Completed Layer 1 (`skia-rs-math` 14 files + `skia-rs-geometry` 16 files; `DM: 1000/1000 match`, `2644/2644` CPU unit tests); starting 4-way parallel fan-out on `skia-rs-color`, `skia-rs-path`, `skia-rs-region`, and `skia-rs-core-types`.
+> **Current Step:** **Phase 1 — Layer 2 (Core Primitives & Data Structures)** — Completed `skia-rs-core-types` (18 files: `SkData`, `SkStream`, `SkBuffer`, `SkRead/WriteBuffer`, `SkWriter32`, `SkString`, `SkFlattenable`, `SkPaint`, `SkDescriptor`, `SkMask`, `SkBlurMask`, `SkGaussFilter`, `SkMaskGamma`, `SkMaskCache`; `DM: 1000/1000 match`, `2644/2644` CPU unit tests); finishing `skia-rs-color`, `skia-rs-path`, and `skia-rs-region` in parallel.
 >
 > Full dependency graph & module status: **[`PORTING.md`](PORTING.md)**
 
 ```text
-Phase 1 (CPU Raster 8888):  [####----------------]   4/19   modules (21.1%) - Layer 2 in progress
-Overall Skia Rewrite:       [--------------------]  30/1442 files   ( 2.1%) - Phases completed: 0/5
+Phase 1 (CPU Raster 8888):  [#####---------------]   5/19   modules (26.3%) - Layer 2 in progress
+Overall Skia Rewrite:       [#-------------------]  48/1442 files   ( 3.3%) - Phases completed: 0/5
 ```
 
 | Phase | Scope | Files Ported | Share of Skia | Status |
 |---|---|---|---|---|
-| **Phase 1** | CPU raster backend (`config 8888`) | `30 / 448` (`4/19` modules) | `31.1%` | In progress (Layer 1 done → Layer 2 fan-out) |
+| **Phase 1** | CPU raster backend (`config 8888`) | `48 / 448` (`5/19` modules) | `31.1%` | In progress (`skia-rs-core-types` done; `color`/`path`/`region` in flight) |
 | **Phase 2** | Image codecs (`src/codec/`, `src/encode/`) | `0 / 62` | `4.3%` | Pending |
 | **Phase 3** | SkSL shader compiler (`src/sksl/`) | `0 / 121` | `8.4%` | Pending |
 | **Phase 4** | GPU backends (Ganesh, then Graphite) | `0 / 544` | `37.7%` | Pending |
