@@ -4,18 +4,18 @@ A safe Rust rewrite of Google's [Skia](https://skia.org/) 2D graphics library, v
 
 ## Progress
 
-> **Current Step:** **Phase 1 — 19/19 Modules Ported!** — Completed `skia-rs-canvas` (Layer 5.3, 30 files: `SkDraw*`, `SkDevice`, `SkBitmapDevice`, `SkClipStackDevice`, `SkCanvas*`, `SkOverdrawCanvas`, `SkNWayCanvas`, `SkNullCanvas`, `SkPaintFilterCanvas`, `SkCanvasStack`, `SkCanvasStateUtils`, `SkRecorder`, `RasterContext`, `SkMesh`, `SkDocument`, `SkTiledImageUtils`; `DM: 1000/1000 match`, `2644/2644` CPU unit tests). Running Phase 1 post-phase cleanup & performance A/B check next.
+> **Current Step:** **Phase 1 Complete!** — All `19/19` CPU raster backend modules (`314` C++ files) are ported to `18` safe Rust (`#![forbid(unsafe_code)]`) crates, verified (`DM: 1000/1000 match`, `2644/2644` CPU unit tests, `427/427` Rust tests), cleaned up (314 replaced `.cpp` files & toggles removed; tagged `phase1-pre-cleanup`), and benchmarked in **[`BENCHMARKS.md`](BENCHMARKS.md)** (`-6.9%` GM runtime, `-5.9%` clean `libskia.a` build time). Ready for Phase 2 (Image Codecs) upon approval.
 >
-> Full dependency graph & module status: **[`PORTING.md`](PORTING.md)**
+> Full dependency graph & module status: **[`PORTING.md`](PORTING.md)** | Performance A/B report: **[`BENCHMARKS.md`](BENCHMARKS.md)**
 
 ```text
-Phase 1 (CPU Raster 8888):  [####################]  19/19   modules (100.0%) - Ported (cleanup & A/B in progress)
-Overall Skia Rewrite:       [####----------------] 314/1427 files   (22.0%) - Phases completed: 0/6
+Phase 1 (CPU Raster 8888):  [####################]  19/19   modules (100.0%) - Complete (cleaned up & benchmarked)
+Overall Skia Rewrite:       [####----------------] 314/1427 files   (22.0%) - Phases completed: 1/6
 ```
 
 | Phase | Scope | Files Ported | Share of Skia | Status |
 |---|---|---|---|---|
-| **Phase 1** | CPU raster backend (`config 8888`) | `314 / 314` (`19/19` modules) | `22.0%` | All 19/19 modules ported (`DM: 1000/1000`); running cleanup & perf A/B |
+| **Phase 1** | CPU raster backend (`config 8888`) | `314 / 314` (`19/19` modules) | `22.0%` | **Complete** (`DM: 1000/1000`, cleaned up, [`BENCHMARKS.md`](BENCHMARKS.md)) |
 | **Phase 2** | Image codecs (`src/codec/`, `src/encode/`) | `0 / 62` | `4.3%` | Pending |
 | **Phase 3** | SkSL shader compiler & `SkRuntimeEffect` (`src/sksl/`, `SkRuntime*`) | `0 / 128` | `9.0%` | Pending |
 | **Phase 4** | GPU backends (Ganesh, then Graphite; `src/gpu/`, `src/text/gpu/`) | `0 / 559` | `39.2%` | Pending |
@@ -38,6 +38,7 @@ At a high level, every module follows the same loop:
 - [`UPSTREAM.toml`](UPSTREAM.toml) — Exact pinned upstream Skia repository, branch, commit SHA, and commit date.
 - [`BASELINE.toml`](BASELINE.toml) — Exact GN build flags, `dm` flags, generation date, and machine specs used for the baseline verification.
 - [`PORTING.md`](PORTING.md) — Step-by-step porting process, architecture ground rules, phase dependency graph, performance/cleanup workflow, and live module status.
+- [`BENCHMARKS.md`](BENCHMARKS.md) — Per-phase baseline-vs-Rust performance A/B results (execution time, peak RSS, compile time, and binary size).
 - [`rust-toolchain.toml`](rust-toolchain.toml) — Pinned Rust toolchain version (`1.100.0`).
 - [`tools/verify_dm/`](tools/verify_dm/) — Safe Rust verification harness comparing `skia-rewrite/out/Rust/dm` against `skia-baseline/out/dm/dm.json` and checking protected paths.
 - [`skia-baseline/`](skia-baseline/) — Untouched pinned upstream C++ Skia checkout (read-only forever). Build artifacts (`skia-baseline/out/Original/`) and reference hashes (`skia-baseline/out/dm/dm.json`) live here and are git-ignored.

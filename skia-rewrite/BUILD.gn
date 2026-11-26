@@ -1242,56 +1242,17 @@ skia_source_set("pathops") {
   configs = skia_library_configs
   public = skia_pathops_public
   sources = skia_pathops_sources
-  if (skia_rust_pathops) {
-    sources -= [
-      "//src/pathops/SkAddIntersections.cpp",
-      "//src/pathops/SkDConicLineIntersection.cpp",
-      "//src/pathops/SkDCubicLineIntersection.cpp",
-      "//src/pathops/SkDCubicToQuads.cpp",
-      "//src/pathops/SkDLineIntersection.cpp",
-      "//src/pathops/SkDQuadLineIntersection.cpp",
-      "//src/pathops/SkIntersections.cpp",
-      "//src/pathops/SkOpAngle.cpp",
-      "//src/pathops/SkOpBuilder.cpp",
-      "//src/pathops/SkOpCoincidence.cpp",
-      "//src/pathops/SkOpContour.cpp",
-      "//src/pathops/SkOpCubicHull.cpp",
-      "//src/pathops/SkOpEdgeBuilder.cpp",
-      "//src/pathops/SkOpSegment.cpp",
-      "//src/pathops/SkOpSpan.cpp",
-      "//src/pathops/SkPathOpsAsWinding.cpp",
-      "//src/pathops/SkPathOpsCommon.cpp",
-      "//src/pathops/SkPathOpsConic.cpp",
-      "//src/pathops/SkPathOpsCubic.cpp",
-      "//src/pathops/SkPathOpsCurve.cpp",
-      "//src/pathops/SkPathOpsDebug.cpp",
-      "//src/pathops/SkPathOpsLine.cpp",
-      "//src/pathops/SkPathOpsOp.cpp",
-      "//src/pathops/SkPathOpsQuad.cpp",
-      "//src/pathops/SkPathOpsRect.cpp",
-      "//src/pathops/SkPathOpsSimplify.cpp",
-      "//src/pathops/SkPathOpsTSect.cpp",
-      "//src/pathops/SkPathOpsTightBounds.cpp",
-      "//src/pathops/SkPathOpsTypes.cpp",
-      "//src/pathops/SkPathOpsWinding.cpp",
-      "//src/pathops/SkPathWriter.cpp",
-      "//src/pathops/SkReduceOrder.cpp",
-    ]
-    sources += [
-      "src/rust_bridge/SkPathOpsInternal_rust.cpp",
-      "src/rust_bridge/SkPathOps_rust.cpp",
-    ]
-  }
+  sources += [
+    "src/rust_bridge/SkPathOpsInternal_rust.cpp",
+    "src/rust_bridge/SkPathOps_rust.cpp",
+  ]
   deps = [ ":core" ]
 }
 
 skia_source_set("clipstack_utils") {
   configs = skia_library_configs
   sources = skia_clipstack_utils_sources
-  if (skia_rust_region) {
-    sources -= [ "//src/utils/SkClipStackUtils.cpp" ]
-    sources += [ "src/rust_bridge/SkClipStackUtils_rust.cpp" ]
-  }
+  sources += [ "src/rust_bridge/SkClipStackUtils_rust.cpp" ]
   deps = [
     ":core",
     ":pathops",
@@ -2101,41 +2062,39 @@ if (skia_enable_ganesh && skia_generate_workarounds) {
 
 import("gn/codec.gni")
 
-if (skia_use_rust_skia) {
-  action("skia_rs_ffi_build") {
-    script = "gn/build_rust_skia.py"
-    outputs = [ "$root_out_dir/libskia_rs_ffi.a" ]
-    depfile = "$root_out_dir/libskia_rs_ffi.a.d"
-    args = [
-      "--manifest",
-      rebase_path("rust/Cargo.toml", root_build_dir),
-      "--target-dir",
-      rebase_path("$root_out_dir/rust_target", root_build_dir),
-      "--output",
-      rebase_path("$root_out_dir/libskia_rs_ffi.a", root_build_dir),
-      "--depfile",
-      rebase_path("$root_out_dir/libskia_rs_ffi.a.d", root_build_dir),
-    ]
-  }
+action("skia_rs_ffi_build") {
+  script = "gn/build_rust_skia.py"
+  outputs = [ "$root_out_dir/libskia_rs_ffi.a" ]
+  depfile = "$root_out_dir/libskia_rs_ffi.a.d"
+  args = [
+    "--manifest",
+    rebase_path("rust/Cargo.toml", root_build_dir),
+    "--target-dir",
+    rebase_path("$root_out_dir/rust_target", root_build_dir),
+    "--output",
+    rebase_path("$root_out_dir/libskia_rs_ffi.a", root_build_dir),
+    "--depfile",
+    rebase_path("$root_out_dir/libskia_rs_ffi.a.d", root_build_dir),
+  ]
+}
 
-  config("skia_rs_ffi_link") {
-    # Link system libm before libskia_rs_ffi.a so C++ math calls (e.g. cbrtf)
-    # resolve to glibc libm rather than weak compiler_builtins symbols in the
-    # Rust staticlib.
-    libs = []
-    if (is_linux) {
-      libs += [ "m" ]
-    }
-    libs += [ "$root_out_dir/libskia_rs_ffi.a" ]
-    if (is_linux) {
-      libs += [ "dl" ]
-    }
+config("skia_rs_ffi_link") {
+  # Link system libm before libskia_rs_ffi.a so C++ math calls (e.g. cbrtf)
+  # resolve to glibc libm rather than weak compiler_builtins symbols in the
+  # Rust staticlib.
+  libs = []
+  if (is_linux) {
+    libs += [ "m" ]
   }
+  libs += [ "$root_out_dir/libskia_rs_ffi.a" ]
+  if (is_linux) {
+    libs += [ "dl" ]
+  }
+}
 
-  group("skia_rs_ffi") {
-    public_deps = [ ":skia_rs_ffi_build" ]
-    all_dependent_configs = [ ":skia_rs_ffi_link" ]
-  }
+group("skia_rs_ffi") {
+  public_deps = [ ":skia_rs_ffi_build" ]
+  all_dependent_configs = [ ":skia_rs_ffi_link" ]
 }
 
 skia_source_set("core") {
@@ -2157,405 +2116,73 @@ skia_source_set("core") {
     ":typeface_freetype",
   ]
 
-  if (skia_use_rust_skia) {
-    public_deps += [ ":skia_rs_ffi" ]
-  }
+  public_deps += [ ":skia_rs_ffi" ]
 
-  if (skia_rust_md5) {
-    sources -= [ "//src/core/SkMD5.cpp" ]
-    sources += [ "src/rust_bridge/SkMD5_rust.cpp" ]
-  }
-
-  if (skia_rust_math) {
-    sources -= [
-      "//src/core/SkBase64.cpp",
-      "//src/core/SkBezierCurves.cpp",
-      "//src/core/SkChecksum.cpp",
-      "//src/core/SkCubicMap.cpp",
-      "//src/core/SkCubics.cpp",
-      "//src/core/SkFloatingPoint.cpp",
-      "//src/core/SkHalf.cpp",
-      "//src/core/SkMathPriv.cpp",
-      "//src/core/SkQuads.cpp",
-      "//src/core/SkSafeMath.cpp",
-      "//src/core/SkScalar.cpp",
-      "//src/core/SkUTF.cpp",
-    ]
-    sources += [ "src/rust_bridge/SkMath_rust.cpp" ]
-  }
-
-  if (skia_rust_geometry) {
-    sources -= [
-      "//src/core/SkCubicClipper.cpp",
-      "//src/core/SkEdgeClipper.cpp",
-      "//src/core/SkGeometry.cpp",
-      "//src/core/SkLineClipper.cpp",
-      "//src/core/SkM44.cpp",
-      "//src/core/SkMatrix.cpp",
-      "//src/core/SkMatrixInvert.cpp",
-      "//src/core/SkPoint.cpp",
-      "//src/core/SkPoint3.cpp",
-      "//src/core/SkQuadClipper.cpp",
-      "//src/core/SkRRect.cpp",
-      "//src/core/SkRSXform.cpp",
-      "//src/core/SkRect.cpp",
-      "//src/core/SkVertState.cpp",
-      "//src/core/SkVertices.cpp",
-    ]
-    sources += [
-      "src/rust_bridge/SkGeometryBasic_rust.cpp",
-      "src/rust_bridge/SkGeometryCurves_rust.cpp",
-      "src/rust_bridge/SkMatrix_rust.cpp",
-      "src/rust_bridge/SkRRect_rust.cpp",
-      "src/rust_bridge/SkVertices_rust.cpp",
-    ]
-  }
-
-  if (skia_rust_color) {
-    sources -= [
-      "//src/core/SkBlendMode.cpp",
-      "//src/core/SkBlendModeBlender.cpp",
-      "//src/core/SkColor.cpp",
-      "//src/core/SkColorSpace.cpp",
-      "//src/core/SkColorSpaceXformSteps.cpp",
-      "//src/core/SkColorTable.cpp",
-      "//src/core/SkConvertPixels.cpp",
-      "//src/core/SkImageInfo.cpp",
-      "//src/core/SkMasks.cpp",
-      "//src/core/SkSwizzle.cpp",
-      "//src/core/SkSwizzler_opts.cpp",
-      "//src/core/SkUnPreMultiply.cpp",
-      "//src/core/SkYUVAInfo.cpp",
-      "//src/core/SkYUVAPixmaps.cpp",
-      "//src/core/SkYUVMath.cpp",
-    ]
-    sources += [
-      "src/rust_bridge/SkColor_rust.cpp",
-      "src/rust_bridge/SkColorSpace_rust.cpp",
-      "src/rust_bridge/SkSwizzleConvert_rust.cpp",
-      "src/rust_bridge/SkYUV_rust.cpp",
-    ]
-  }
-
-  if (skia_rust_path) {
-    sources -= [
-      "//src/core/SkContourMeasure.cpp",
-      "//src/core/SkPath.cpp",
-      "//src/core/SkPathBuilder.cpp",
-      "//src/core/SkPathData.cpp",
-      "//src/core/SkPathDump.cpp",
-      "//src/core/SkPathIter.cpp",
-      "//src/core/SkPathMeasure.cpp",
-      "//src/core/SkPathPriv.cpp",
-      "//src/core/SkPathRaw.cpp",
-      "//src/core/SkPathRawShapes.cpp",
-      "//src/core/SkPathUtils.cpp",
-      "//src/core/SkPath_interpolate.cpp",
-      "//src/core/SkPath_serial.cpp",
-      "//src/core/SkStroke.cpp",
-      "//src/core/SkStrokeRec.cpp",
-      "//src/core/SkStrokerPriv.cpp",
-    ]
-    sources += [
-      "src/rust_bridge/SkPathMeasure_rust.cpp",
-      "src/rust_bridge/SkPath_rust.cpp",
-      "src/rust_bridge/SkStroke_rust.cpp",
-    ]
-  }
-
-  if (skia_rust_region) {
-    sources -= [
-      "//src/core/SkAAClip.cpp",
-      "//src/core/SkBBHFactory.cpp",
-      "//src/core/SkClipStack.cpp",
-      "//src/core/SkRTree.cpp",
-      "//src/core/SkRasterClip.cpp",
-      "//src/core/SkRegion.cpp",
-      "//src/core/SkRegion_path.cpp",
-    ]
-    sources += [
-      "src/rust_bridge/SkAAClip_rust.cpp",
-      "src/rust_bridge/SkClipStack_rust.cpp",
-      "src/rust_bridge/SkRTree_rust.cpp",
-      "src/rust_bridge/SkRasterClip_rust.cpp",
-      "src/rust_bridge/SkRegion_path_rust.cpp",
-      "src/rust_bridge/SkRegion_rust.cpp",
-    ]
-  }
-
-  if (skia_rust_core_types) {
-    sources -= [
-      "//src/core/SkBlurMask.cpp",
-      "//src/core/SkBuffer.cpp",
-      "//src/core/SkData.cpp",
-      "//src/core/SkDataTable.cpp",
-      "//src/core/SkDescriptor.cpp",
-      "//src/core/SkFlattenable.cpp",
-      "//src/core/SkGaussFilter.cpp",
-      "//src/core/SkMask.cpp",
-      "//src/core/SkMaskCache.cpp",
-      "//src/core/SkMaskGamma.cpp",
-      "//src/core/SkPaint.cpp",
-      "//src/core/SkPaintPriv.cpp",
-      "//src/core/SkReadBuffer.cpp",
-      "//src/core/SkStream.cpp",
-      "//src/core/SkString.cpp",
-      "//src/core/SkStringUtils.cpp",
-      "//src/core/SkWriteBuffer.cpp",
-      "//src/core/SkWriter32.cpp",
-    ]
-    sources += [
-      "src/rust_bridge/SkDataStream_rust.cpp",
-      "src/rust_bridge/SkBuffersString_rust.cpp",
-      "src/rust_bridge/SkPaintDescriptor_rust.cpp",
-      "src/rust_bridge/SkMaskBlur_rust.cpp",
-    ]
-  }
-
-  if (skia_rust_raster) {
-    sources -= [
-      "//src/core/SkBlitMask_opts.cpp",
-      "//src/core/SkBlitRow_D32.cpp",
-      "//src/core/SkBlitRow_opts.cpp",
-      "//src/core/SkBlitter.cpp",
-      "//src/core/SkBlitter_A8.cpp",
-      "//src/core/SkBlitter_ARGB32.cpp",
-      "//src/core/SkBlitter_Sprite.cpp",
-      "//src/core/SkMemset_opts.cpp",
-      "//src/core/SkOpts.cpp",
-      "//src/core/SkRasterPipeline.cpp",
-      "//src/core/SkRasterPipelineBlitter.cpp",
-      "//src/core/SkSpriteBlitter_ARGB32.cpp",
-    ]
-    sources += [
-      "src/rust_bridge/SkBlitOpts_rust.cpp",
-      "src/rust_bridge/SkBlitter_rust.cpp",
-      "src/rust_bridge/SkRasterPipeline_rust.cpp",
-    ]
-  }
-
-  if (skia_rust_image) {
-    sources -= [
-      "//src/core/SkBitmap.cpp",
-      "//src/core/SkBitmapCache.cpp",
-      "//src/core/SkBitmapProcState.cpp",
-      "//src/core/SkBitmapProcState_matrixProcs.cpp",
-      "//src/core/SkBitmapProcState_opts.cpp",
-      "//src/core/SkImageGenerator.cpp",
-      "//src/core/SkMallocPixelRef.cpp",
-      "//src/core/SkMipmap.cpp",
-      "//src/core/SkMipmapAccessor.cpp",
-      "//src/core/SkMipmapBuilder.cpp",
-      "//src/core/SkMipmapDrawDownSampler.cpp",
-      "//src/core/SkMipmapHQDownSampler.cpp",
-      "//src/core/SkPixelRef.cpp",
-      "//src/core/SkPixmap.cpp",
-      "//src/core/SkPixmapDraw.cpp",
-      "//src/core/SkSpecialImage.cpp",
-      "//src/image/SkImage.cpp",
-      "//src/image/SkImage_Base.cpp",
-      "//src/image/SkImage_Lazy.cpp",
-      "//src/image/SkImage_LazyFactories.cpp",
-      "//src/image/SkImage_Picture.cpp",
-      "//src/image/SkImage_Raster.cpp",
-      "//src/image/SkImage_RasterFactories.cpp",
-      "//src/image/SkRescaleAndReadPixels.cpp",
-      "//src/image/SkSurface.cpp",
-      "//src/image/SkSurface_Base.cpp",
-      "//src/image/SkSurface_Null.cpp",
-      "//src/image/SkSurface_Raster.cpp",
-    ]
-    sources += [
-      "src/rust_bridge/SkBitmapProcState_rust.cpp",
-      "src/rust_bridge/SkBitmap_rust.cpp",
-      "src/rust_bridge/SkImage_LazyPicture_rust.cpp",
-      "src/rust_bridge/SkImage_rust.cpp",
-      "src/rust_bridge/SkMipmap_rust.cpp",
-      "src/rust_bridge/SkPixmap_rust.cpp",
-      "src/rust_bridge/SkSpecialImage_rust.cpp",
-      "src/rust_bridge/SkSurface_rust.cpp",
-    ]
-  }
-
-  if (skia_rust_scan) {
-    sources -= [
-      "//src/core/SkAlphaRuns.cpp",
-      "//src/core/SkAnalyticEdge.cpp",
-      "//src/core/SkDistanceFieldGen.cpp",
-      "//src/core/SkEdge.cpp",
-      "//src/core/SkEdgeBuilder.cpp",
-      "//src/core/SkScan.cpp",
-      "//src/core/SkScan_AAAPath.cpp",
-      "//src/core/SkScan_AntiPath.cpp",
-      "//src/core/SkScan_Antihair.cpp",
-      "//src/core/SkScan_Hairline.cpp",
-      "//src/core/SkScan_Path.cpp",
-    ]
-    sources += [
-      "src/rust_bridge/SkDistanceFieldGen_rust.cpp",
-      "src/rust_bridge/SkEdge_rust.cpp",
-      "src/rust_bridge/SkScan_AntiPath_rust.cpp",
-      "src/rust_bridge/SkScan_Hairline_rust.cpp",
-      "src/rust_bridge/SkScan_rust.cpp",
-    ]
-  }
-
-  if (skia_rust_colorfilters) {
-    sources -= [ "//src/core/SkColorFilter.cpp" ]
-    sources += [ "src/rust_bridge/SkColorFilter_rust.cpp" ]
-  }
-
-  if (skia_rust_shaders) {
-    sources -= [
-      "//src/shaders/SkBitmapProcShader.cpp",
-      "//src/shaders/SkBlendShader.cpp",
-      "//src/shaders/SkColorFilterShader.cpp",
-      "//src/shaders/SkColorShader.cpp",
-      "//src/shaders/SkCoordClampShader.cpp",
-      "//src/shaders/SkEmptyShader.cpp",
-      "//src/shaders/SkGainmapShader.cpp",
-      "//src/shaders/SkImageShader.cpp",
-      "//src/shaders/SkLocalMatrixShader.cpp",
-      "//src/shaders/SkPerlinNoiseShaderImpl.cpp",
-      "//src/shaders/SkPictureShader.cpp",
-      "//src/shaders/SkShader.cpp",
-      "//src/shaders/SkShaderBase.cpp",
-      "//src/shaders/SkTransformShader.cpp",
-      "//src/shaders/SkTriColorShader.cpp",
-      "//src/shaders/SkWorkingColorSpaceShader.cpp",
-    ]
-    sources += [
-      "src/rust_bridge/SkImageShader_rust.cpp",
-      "src/rust_bridge/SkShaders_rust.cpp",
-    ]
-  }
-
-  if (skia_rust_imagefilters) {
-    sources -= [
-      "//src/core/SkImageFilter.cpp",
-      "//src/core/SkImageFilterCache.cpp",
-      "//src/core/SkImageFilterTypes.cpp",
-      "//src/core/SkLocalMatrixImageFilter.cpp",
-    ]
-    sources += [
-      "src/rust_bridge/SkImageFilterCore_rust.cpp",
-      "src/rust_bridge/SkImageFilterTypes_rust.cpp",
-    ]
-  }
-
-  if (skia_rust_effects) {
-    sources -= [
-      "//src/core/SkBlurEngine.cpp",
-      "//src/core/SkBlurMaskFilterImpl.cpp",
-      "//src/core/SkDrawShadowInfo.cpp",
-      "//src/core/SkMaskBlurFilter.cpp",
-      "//src/core/SkMaskFilter.cpp",
-      "//src/core/SkMaskFilterBase.cpp",
-      "//src/core/SkPathEffect.cpp",
-    ]
-    sources += [
-      "src/rust_bridge/SkBlurEngine_rust.cpp",
-      "src/rust_bridge/SkDrawShadowInfo_rust.cpp",
-      "src/rust_bridge/SkMaskFilterCore_rust.cpp",
-      "src/rust_bridge/SkPathEffectCore_rust.cpp",
-    ]
-  }
-
-  if (skia_rust_text) {
-    sources -= [
-      "//src/core/SkFont.cpp",
-      "//src/core/SkFontDescriptor.cpp",
-      "//src/core/SkFontMetricsPriv.cpp",
-      "//src/core/SkFontMgr.cpp",
-      "//src/core/SkFontStream.cpp",
-      "//src/core/SkFont_serial.cpp",
-      "//src/core/SkGlyph.cpp",
-      "//src/core/SkGlyphRunPainter.cpp",
-      "//src/core/SkScalerContext.cpp",
-      "//src/core/SkStrike.cpp",
-      "//src/core/SkStrikeCache.cpp",
-      "//src/core/SkStrikeRef.cpp",
-      "//src/core/SkStrikeSpec.cpp",
-      "//src/core/SkTextBlob.cpp",
-      "//src/core/SkTypeface.cpp",
-      "//src/core/SkTypefaceCache.cpp",
-      "//src/core/SkTypeface_remote.cpp",
-      "//src/text/GlyphRun.cpp",
-      "//src/text/SlugFromBuffer.cpp",
-      "//src/text/StrikeForGPU.cpp",
-    ]
-    sources += [
-      "src/rust_bridge/SkFont_rust.cpp",
-      "src/rust_bridge/SkGlyphScaler_rust.cpp",
-      "src/rust_bridge/SkStrike_rust.cpp",
-      "src/rust_bridge/SkTextBlobRun_rust.cpp",
-      "src/rust_bridge/SkTypeface_rust.cpp",
-    ]
-  }
-
-  if (skia_rust_picture) {
-    sources -= [
-      "//src/core/SkAnnotation.cpp",
-      "//src/core/SkDrawable.cpp",
-      "//src/core/SkLatticeIter.cpp",
-      "//src/core/SkPicture.cpp",
-      "//src/core/SkPictureData.cpp",
-      "//src/core/SkPictureFlat.cpp",
-      "//src/core/SkPicturePlayback.cpp",
-      "//src/core/SkPictureRecord.cpp",
-      "//src/core/SkPictureRecorder.cpp",
-      "//src/core/SkPtrRecorder.cpp",
-      "//src/core/SkRecord.cpp",
-      "//src/core/SkRecordCanvas.cpp",
-      "//src/core/SkRecordDraw.cpp",
-      "//src/core/SkRecordOpts.cpp",
-      "//src/core/SkRecordedDrawable.cpp",
-      "//src/core/SkRecords.cpp",
-      "//src/image/SkPictureImageGenerator.cpp",
-    ]
-    sources += [
-      "src/rust_bridge/SkDrawableLattice_rust.cpp",
-      "src/rust_bridge/SkPicture_rust.cpp",
-      "src/rust_bridge/SkRecord_rust.cpp",
-    ]
-  }
-
-  if (skia_rust_canvas) {
-    sources -= [
-      "//src/core/RasterContext.cpp",
-      "//src/core/SkAutoPixmapStorage.cpp",
-      "//src/core/SkBitmapDevice.cpp",
-      "//src/core/SkCanvas.cpp",
-      "//src/core/SkCanvasPriv.cpp",
-      "//src/core/SkCanvas_Raster.cpp",
-      "//src/core/SkCapabilities.cpp",
-      "//src/core/SkClipStackDevice.cpp",
-      "//src/core/SkContext.cpp",
-      "//src/core/SkDevice.cpp",
-      "//src/core/SkDocument.cpp",
-      "//src/core/SkDraw.cpp",
-      "//src/core/SkDraw_atlas.cpp",
-      "//src/core/SkDraw_text.cpp",
-      "//src/core/SkDraw_vertices.cpp",
-      "//src/core/SkGlobalInitialization_core.cpp",
-      "//src/core/SkGraphics.cpp",
-      "//src/core/SkMesh.cpp",
-      "//src/core/SkOverdrawCanvas.cpp",
-      "//src/core/SkPixelStorage.cpp",
-      "//src/core/SkReadPixelsRec.cpp",
-      "//src/core/SkRecorder.cpp",
-      "//src/core/SkWritePixelsRec.cpp",
-      "//src/cpu/Recorder.cpp",
-      "//src/image/SkTiledImageUtils.cpp",
-    ]
-    sources += [
-      "src/rust_bridge/SkCanvasHelpers_rust.cpp",
-      "src/rust_bridge/SkCanvas_rust.cpp",
-      "src/rust_bridge/SkCoreMisc_rust.cpp",
-      "src/rust_bridge/SkDevice_rust.cpp",
-      "src/rust_bridge/SkDraw_rust.cpp",
-    ]
-  }
+  sources += [
+    # Phase 1 unconditional safe Rust FFI bridge shims (:core)
+    "src/rust_bridge/SkAAClip_rust.cpp",
+    "src/rust_bridge/SkBitmapProcState_rust.cpp",
+    "src/rust_bridge/SkBitmap_rust.cpp",
+    "src/rust_bridge/SkBlitOpts_rust.cpp",
+    "src/rust_bridge/SkBlitter_rust.cpp",
+    "src/rust_bridge/SkBlurEngine_rust.cpp",
+    "src/rust_bridge/SkBuffersString_rust.cpp",
+    "src/rust_bridge/SkCanvasHelpers_rust.cpp",
+    "src/rust_bridge/SkCanvas_rust.cpp",
+    "src/rust_bridge/SkClipStack_rust.cpp",
+    "src/rust_bridge/SkColorFilter_rust.cpp",
+    "src/rust_bridge/SkColorSpace_rust.cpp",
+    "src/rust_bridge/SkColor_rust.cpp",
+    "src/rust_bridge/SkCoreMisc_rust.cpp",
+    "src/rust_bridge/SkDataStream_rust.cpp",
+    "src/rust_bridge/SkDevice_rust.cpp",
+    "src/rust_bridge/SkDistanceFieldGen_rust.cpp",
+    "src/rust_bridge/SkDrawShadowInfo_rust.cpp",
+    "src/rust_bridge/SkDraw_rust.cpp",
+    "src/rust_bridge/SkDrawableLattice_rust.cpp",
+    "src/rust_bridge/SkEdge_rust.cpp",
+    "src/rust_bridge/SkFont_rust.cpp",
+    "src/rust_bridge/SkGeometryBasic_rust.cpp",
+    "src/rust_bridge/SkGeometryCurves_rust.cpp",
+    "src/rust_bridge/SkGlyphScaler_rust.cpp",
+    "src/rust_bridge/SkImageFilterCore_rust.cpp",
+    "src/rust_bridge/SkImageFilterTypes_rust.cpp",
+    "src/rust_bridge/SkImageShader_rust.cpp",
+    "src/rust_bridge/SkImage_LazyPicture_rust.cpp",
+    "src/rust_bridge/SkImage_rust.cpp",
+    "src/rust_bridge/SkMD5_rust.cpp",
+    "src/rust_bridge/SkMaskBlur_rust.cpp",
+    "src/rust_bridge/SkMaskFilterCore_rust.cpp",
+    "src/rust_bridge/SkMath_rust.cpp",
+    "src/rust_bridge/SkMatrix_rust.cpp",
+    "src/rust_bridge/SkMipmap_rust.cpp",
+    "src/rust_bridge/SkPaintDescriptor_rust.cpp",
+    "src/rust_bridge/SkPathEffectCore_rust.cpp",
+    "src/rust_bridge/SkPathMeasure_rust.cpp",
+    "src/rust_bridge/SkPath_rust.cpp",
+    "src/rust_bridge/SkPicture_rust.cpp",
+    "src/rust_bridge/SkPixmap_rust.cpp",
+    "src/rust_bridge/SkRRect_rust.cpp",
+    "src/rust_bridge/SkRTree_rust.cpp",
+    "src/rust_bridge/SkRasterClip_rust.cpp",
+    "src/rust_bridge/SkRasterPipeline_rust.cpp",
+    "src/rust_bridge/SkRecord_rust.cpp",
+    "src/rust_bridge/SkRegion_path_rust.cpp",
+    "src/rust_bridge/SkRegion_rust.cpp",
+    "src/rust_bridge/SkScan_AntiPath_rust.cpp",
+    "src/rust_bridge/SkScan_Hairline_rust.cpp",
+    "src/rust_bridge/SkScan_rust.cpp",
+    "src/rust_bridge/SkShaders_rust.cpp",
+    "src/rust_bridge/SkSpecialImage_rust.cpp",
+    "src/rust_bridge/SkStrike_rust.cpp",
+    "src/rust_bridge/SkStroke_rust.cpp",
+    "src/rust_bridge/SkSurface_rust.cpp",
+    "src/rust_bridge/SkSwizzleConvert_rust.cpp",
+    "src/rust_bridge/SkTextBlobRun_rust.cpp",
+    "src/rust_bridge/SkTypeface_rust.cpp",
+    "src/rust_bridge/SkVertices_rust.cpp",
+    "src/rust_bridge/SkYUV_rust.cpp",
+  ]
 }
 
 skia_component("skia") {
@@ -2622,119 +2249,28 @@ skia_component("skia") {
 
   sources = []
   sources += skia_utils_private
-  if (skia_rust_math) {
-    sources -= [ "//src/utils/SkFloatToDecimal.cpp" ]
-    sources += [ "src/rust_bridge/SkFloatToDecimal_rust.cpp" ]
-  }
-  if (skia_rust_geometry) {
-    sources -= [ "//src/utils/SkMatrix22.cpp" ]
-    sources += [ "src/rust_bridge/SkMatrix22_rust.cpp" ]
-  }
-  if (skia_rust_path) {
-    sources -= [
-      "//src/utils/SkDashPath.cpp",
-      "//src/utils/SkParsePath.cpp",
-    ]
-    sources += [ "src/rust_bridge/SkDashParsePath_rust.cpp" ]
-  }
   sources += skia_utils_chromium
   sources += skia_effects_sources
   sources += skia_colorfilters_sources
-  if (skia_rust_colorfilters) {
-    sources -= [
-      "//src/effects/SkBlenders.cpp",
-      "//src/effects/SkColorMatrix.cpp",
-      "//src/effects/SkColorMatrixFilter.cpp",
-      "//src/effects/SkHighContrastFilter.cpp",
-      "//src/effects/colorfilters/SkBlendModeColorFilter.cpp",
-      "//src/effects/colorfilters/SkColorFilterBase.cpp",
-      "//src/effects/colorfilters/SkColorSpaceXformColorFilter.cpp",
-      "//src/effects/colorfilters/SkComposeColorFilter.cpp",
-      "//src/effects/colorfilters/SkGaussianColorFilter.cpp",
-      "//src/effects/colorfilters/SkMatrixColorFilter.cpp",
-      "//src/effects/colorfilters/SkTableColorFilter.cpp",
-      "//src/effects/colorfilters/SkWorkingFormatColorFilter.cpp",
-    ]
-    sources += [
-      "src/rust_bridge/SkBlenders_rust.cpp",
-      "src/rust_bridge/SkColorMatrix_rust.cpp",
-      "src/rust_bridge/SkColorFilterEffects_rust.cpp",
-    ]
-  }
-  if (skia_rust_shaders) {
-    sources -= [
-      "//src/shaders/gradients/SkConicalGradient.cpp",
-      "//src/shaders/gradients/SkGradientBaseShader.cpp",
-      "//src/shaders/gradients/SkLinearGradient.cpp",
-      "//src/shaders/gradients/SkRadialGradient.cpp",
-      "//src/shaders/gradients/SkSweepGradient.cpp",
-    ]
-    sources += [ "src/rust_bridge/SkGradients_rust.cpp" ]
-  }
-  if (skia_rust_effects) {
-    sources -= [
-      "//src/effects/Sk1DPathEffect.cpp",
-      "//src/effects/Sk2DPathEffect.cpp",
-      "//src/effects/SkCornerPathEffect.cpp",
-      "//src/effects/SkDashPathEffect.cpp",
-      "//src/effects/SkDiscretePathEffect.cpp",
-      "//src/effects/SkEmbossMask.cpp",
-      "//src/effects/SkEmbossMaskFilter.cpp",
-      "//src/effects/SkShaderMaskFilterImpl.cpp",
-      "//src/effects/SkTableMaskFilter.cpp",
-      "//src/effects/SkTrimPathEffect.cpp",
-      "//src/utils/SkShadowTessellator.cpp",
-      "//src/utils/SkShadowUtils.cpp",
-    ]
-    sources += [
-      "src/rust_bridge/SkMaskFilterEffects_rust.cpp",
-      "src/rust_bridge/SkPathEffects_rust.cpp",
-      "src/rust_bridge/SkShadows_rust.cpp",
-    ]
-  }
-  if (skia_rust_text) {
-    sources -= [ "//src/utils/SkTextUtils.cpp" ]
-    sources += [ "src/rust_bridge/SkTextUtils_rust.cpp" ]
-  }
-  if (skia_rust_picture) {
-    sources -= [ "//src/utils/SkMultiPictureDocument.cpp" ]
-    sources += [ "src/rust_bridge/SkMultiPictureDocument_rust.cpp" ]
-  }
-  if (skia_rust_canvas) {
-    sources -= [
-      "//src/utils/SkCanvasStack.cpp",
-      "//src/utils/SkCanvasStateUtils.cpp",
-      "//src/utils/SkNWayCanvas.cpp",
-      "//src/utils/SkNullCanvas.cpp",
-      "//src/utils/SkPaintFilterCanvas.cpp",
-    ]
-    sources += [ "src/rust_bridge/SkCanvasUtils_rust.cpp" ]
-  }
   sources += skia_effects_imagefilter_sources
-  if (skia_rust_imagefilters) {
-    sources -= [
-      "//src/effects/imagefilters/SkBlendImageFilter.cpp",
-      "//src/effects/imagefilters/SkBlurImageFilter.cpp",
-      "//src/effects/imagefilters/SkColorFilterImageFilter.cpp",
-      "//src/effects/imagefilters/SkComposeImageFilter.cpp",
-      "//src/effects/imagefilters/SkCropImageFilter.cpp",
-      "//src/effects/imagefilters/SkDisplacementMapImageFilter.cpp",
-      "//src/effects/imagefilters/SkDropShadowImageFilter.cpp",
-      "//src/effects/imagefilters/SkImageImageFilter.cpp",
-      "//src/effects/imagefilters/SkLightingImageFilter.cpp",
-      "//src/effects/imagefilters/SkMagnifierImageFilter.cpp",
-      "//src/effects/imagefilters/SkMatrixConvolutionImageFilter.cpp",
-      "//src/effects/imagefilters/SkMatrixTransformImageFilter.cpp",
-      "//src/effects/imagefilters/SkMergeImageFilter.cpp",
-      "//src/effects/imagefilters/SkMorphologyImageFilter.cpp",
-      "//src/effects/imagefilters/SkPictureImageFilter.cpp",
-      "//src/effects/imagefilters/SkShaderImageFilter.cpp",
-    ]
-    sources += [
-      "src/rust_bridge/SkImageFilterEffects_rust.cpp",
-      "src/rust_bridge/SkImageFilters_rust.cpp",
-    ]
-  }
+  sources += [
+    # Phase 1 unconditional safe Rust FFI bridge shims (:skia)
+    "src/rust_bridge/SkBlenders_rust.cpp",
+    "src/rust_bridge/SkCanvasUtils_rust.cpp",
+    "src/rust_bridge/SkColorFilterEffects_rust.cpp",
+    "src/rust_bridge/SkColorMatrix_rust.cpp",
+    "src/rust_bridge/SkDashParsePath_rust.cpp",
+    "src/rust_bridge/SkFloatToDecimal_rust.cpp",
+    "src/rust_bridge/SkGradients_rust.cpp",
+    "src/rust_bridge/SkImageFilterEffects_rust.cpp",
+    "src/rust_bridge/SkImageFilters_rust.cpp",
+    "src/rust_bridge/SkMaskFilterEffects_rust.cpp",
+    "src/rust_bridge/SkMatrix22_rust.cpp",
+    "src/rust_bridge/SkMultiPictureDocument_rust.cpp",
+    "src/rust_bridge/SkPathEffects_rust.cpp",
+    "src/rust_bridge/SkShadows_rust.cpp",
+    "src/rust_bridge/SkTextUtils_rust.cpp",
+  ]
   sources += skia_codec_shared
   sources += skia_codec_decode_bmp
   sources += skia_encode_srcs

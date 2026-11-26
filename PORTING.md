@@ -8,7 +8,7 @@ This document tracks the dependency graph, module porting order, architecture, a
 
 | Phase | Target | Baseline Coverage | Status |
 |---|---|---|---|
-| **Phase 1** | CPU raster backend (`config 8888`) — 314 files | Covered: `skia-baseline/out/dm/dm.json` (`1000` `8888` GM MD5 hashes) + `2644` CPU unit tests via `dm --src gm tests --nogpu --config 8888` | **19/19 modules ported (cleanup & perf A/B in progress)** |
+| **Phase 1** | CPU raster backend (`config 8888`) — 314 files | Covered: `skia-baseline/out/dm/dm.json` (`1000` `8888` GM MD5 hashes) + `2644` CPU unit tests via `dm --src gm tests --nogpu --config 8888` | **Complete (`19/19` modules, cleaned up, benchmarked in [`BENCHMARKS.md`](BENCHMARKS.md))** |
 | **Phase 2** | Image codecs (`src/codec/`, `src/encode/`) — 62 files | Needs baseline check (`--src image colorImage` + codec unit tests) before starting | Pending |
 | **Phase 3** | SkSL shader compiler & `SkRuntimeEffect` (`src/sksl/`, `SkRuntime*`) — 128 files | Covered by CPU SkSL unit tests + GMs (`--src gm tests --nogpu --config 8888`) | Pending |
 | **Phase 4** | GPU backends (Ganesh, then Graphite; `src/gpu/`, `src/text/gpu/`) — 559 files | **Not yet covered** (`skia_use_gl = false`; needs GPU baseline before starting) | Pending |
