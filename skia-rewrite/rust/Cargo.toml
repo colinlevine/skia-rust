@@ -8,6 +8,7 @@ members = [
     "crates/skia-rs-region",
     "crates/skia-rs-core-types",
     "crates/skia-rs-raster",
+    "crates/skia-rs-bitmap",
     "crates/skia-rs-ffi",
 ]
 

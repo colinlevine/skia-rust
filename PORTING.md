@@ -136,7 +136,7 @@ flowchart TD
 | 3.1 | `skia-rs-pathops` | `skia_rust_pathops` | All of `src/pathops/*` (`Op`, `Simplify`, `AsWinding`, `TightBounds`, `SkOpBuilder`) | 1.2, 2.2 | Wave B (4-way) | Planned |
 | 3.2 | `skia-rs-scan` | `skia_rust_scan` | `SkEdge`, `SkAnalyticEdge`, `SkEdgeBuilder`, `SkAlphaRuns`, `SkScan`, `SkScan_Path`, `SkScan_AntiPath`, `SkScan_AAAPath`, `SkScan_Hairline`, `SkScan_Antihair`, `SkDistanceFieldGen` | 1.2, 2.2, 2.3 | Wave B (4-way) | Planned |
 | 3.3 | `skia-rs-raster` | `skia_rust_raster` | `SkRasterPipeline`, `SkRasterPipelineBlitter`, `SkBlitter`, `SkBlitter_ARGB32`, `SkBlitter_A8`, `SkBlitter_Sprite`, `SkSpriteBlitter_ARGB32`, `SkBlitRow_D32`, `SkBlitRow_opts`, `SkBlitMask_opts`, `SkMemset_opts`, `SkOpts` | 1.2, 2.1, 2.3 | Wave B (4-way) | **Done** (`DM: 1000/1000`) |
-| 3.4 | `skia-rs-image` | `skia_rust_image` | `SkPixmap`, `SkPixmapDraw`, `SkPixelRef`, `SkMallocPixelRef`, `SkBitmap`, `SkBitmapCache`, `SkBitmapProcState`, `SkMipmap*`, `SkImage`, `SkImage_Base`, `SkImage_Raster`, `SkImage_Lazy`, `SkImage_Picture`, `SkRescaleAndReadPixels`, `SkSurface`, `SkSurface_Base`, `SkSurface_Raster`, `SkSurface_Null`, `SkSpecialImage` | 1.2, 2.1, 2.4 | Wave B (4-way) | Planned |
+| 3.4 | `skia-rs-image` (`skia-rs-bitmap` + `skia-rs-image`) | `skia_rust_image` | `SkPixmap`, `SkPixmapDraw`, `SkPixelRef`, `SkMallocPixelRef`, `SkBitmap`, `SkBitmapCache`, `SkBitmapProcState`, `SkMipmap*`, `SkSpecialImage` (**done**); `SkImage*`, `SkRescaleAndReadPixels`, `SkSurface*` (in flight) | 1.2, 2.1, 2.4 | Wave B (4-way) | **3.4a Done** (`DM: 1000/1000`) |
 
 ### Layer 4 — Shaders, Color Filters, Path/Mask Effects & Image Filters (Fan Out: 3–4 Agents)
 | # | Module / Crate | GN Flag | Key Skia Files Covered | Depends On | Parallel Group | Status |

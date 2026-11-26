@@ -3,6 +3,7 @@
 //! `unsafe` is strictly restricted to this boundary crate; all logic crates
 //! use `#![forbid(unsafe_code)]`.
 
+pub mod bitmap;
 pub mod color;
 pub mod core_types;
 pub mod geometry;
