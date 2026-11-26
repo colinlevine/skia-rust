@@ -8,6 +8,7 @@ pub mod color;
 pub mod core_types;
 pub mod geometry;
 pub mod geometry_curves;
+pub mod image;
 pub mod math;
 pub mod matrix_rrect;
 pub mod md5;

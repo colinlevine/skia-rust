@@ -2301,6 +2301,7 @@ skia_source_set("core") {
       "//src/core/SkBitmapProcState.cpp",
       "//src/core/SkBitmapProcState_matrixProcs.cpp",
       "//src/core/SkBitmapProcState_opts.cpp",
+      "//src/core/SkImageGenerator.cpp",
       "//src/core/SkMallocPixelRef.cpp",
       "//src/core/SkMipmap.cpp",
       "//src/core/SkMipmapAccessor.cpp",
@@ -2311,13 +2312,28 @@ skia_source_set("core") {
       "//src/core/SkPixmap.cpp",
       "//src/core/SkPixmapDraw.cpp",
       "//src/core/SkSpecialImage.cpp",
+      "//src/image/SkImage.cpp",
+      "//src/image/SkImage_Base.cpp",
+      "//src/image/SkImage_Lazy.cpp",
+      "//src/image/SkImage_LazyFactories.cpp",
+      "//src/image/SkImage_Picture.cpp",
+      "//src/image/SkImage_Raster.cpp",
+      "//src/image/SkImage_RasterFactories.cpp",
+      "//src/image/SkRescaleAndReadPixels.cpp",
+      "//src/image/SkSurface.cpp",
+      "//src/image/SkSurface_Base.cpp",
+      "//src/image/SkSurface_Null.cpp",
+      "//src/image/SkSurface_Raster.cpp",
     ]
     sources += [
       "src/rust_bridge/SkBitmapProcState_rust.cpp",
       "src/rust_bridge/SkBitmap_rust.cpp",
+      "src/rust_bridge/SkImage_LazyPicture_rust.cpp",
+      "src/rust_bridge/SkImage_rust.cpp",
       "src/rust_bridge/SkMipmap_rust.cpp",
       "src/rust_bridge/SkPixmap_rust.cpp",
       "src/rust_bridge/SkSpecialImage_rust.cpp",
+      "src/rust_bridge/SkSurface_rust.cpp",
     ]
   }
 }

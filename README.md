@@ -4,18 +4,18 @@ A safe Rust rewrite of Google's [Skia](https://skia.org/) 2D graphics library, v
 
 ## Progress
 
-> **Current Step:** **Phase 1 — Layer 3 (Rasterization Core, PathOps & Surfaces)** — Completed `skia-rs-bitmap` (Layer 3.4a, 15 files: `SkPixmap`, `SkPixmapDraw`, `SkPixelRef`, `SkMallocPixelRef`, `SkBitmap`, `SkBitmapCache`, `SkBitmapProcState*`, `SkMipmap*`, `SkSpecialImage`; `DM: 1000/1000 match`, `2644/2644` CPU unit tests); `skia-rs-image` (3.4b), `skia-rs-scan`, and `skia-rs-pathops` in flight.
+> **Current Step:** **Phase 1 — Layer 3→4 (Rasterization, PathOps & ColorFilters)** — Completed `skia-rs-image` (Layer 3.4b, 13 files: `SkImageGenerator`, `SkImage*`, `SkRescaleAndReadPixels`, `SkSurface*`; `DM: 1000/1000 match`, `2644/2644` CPU unit tests), finishing all of Layer 3.4 (**>50% of Phase 1 done!**); `skia-rs-scan`, `skia-rs-pathops`, and `skia-rs-colorfilters` in flight.
 >
 > Full dependency graph & module status: **[`PORTING.md`](PORTING.md)**
 
 ```text
-Phase 1 (CPU Raster 8888):  [#########-----------]   9/19   modules (47.4%) - Layer 3 in progress (+3.4a bitmap)
-Overall Skia Rewrite:       [##------------------] 116/1442 files   ( 8.0%) - Phases completed: 0/5
+Phase 1 (CPU Raster 8888):  [###########---------]  10/19   modules (52.6%) - Layer 3/4 in progress
+Overall Skia Rewrite:       [##------------------] 129/1442 files   ( 8.9%) - Phases completed: 0/5
 ```
 
 | Phase | Scope | Files Ported | Share of Skia | Status |
 |---|---|---|---|---|
-| **Phase 1** | CPU raster backend (`config 8888`) | `116 / 448` (`9/19` modules + `3.4a`) | `31.1%` | In progress (Layers 0–2, `raster`, `bitmap` done; `image`/`scan`/`pathops` in flight) |
+| **Phase 1** | CPU raster backend (`config 8888`) | `129 / 448` (`10/19` modules) | `31.1%` | In progress (Layers 0–2, `raster`, `bitmap`+`image` done; `scan`/`pathops`/`colorfilters` in flight) |
 | **Phase 2** | Image codecs (`src/codec/`, `src/encode/`) | `0 / 62` | `4.3%` | Pending |
 | **Phase 3** | SkSL shader compiler (`src/sksl/`) | `0 / 121` | `8.4%` | Pending |
 | **Phase 4** | GPU backends (Ganesh, then Graphite) | `0 / 544` | `37.7%` | Pending |

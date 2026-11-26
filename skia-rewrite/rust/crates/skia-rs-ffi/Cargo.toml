@@ -16,3 +16,4 @@ skia-rs-region = { path = "../skia-rs-region" }
 skia-rs-core-types = { path = "../skia-rs-core-types" }
 skia-rs-raster = { path = "../skia-rs-raster" }
 skia-rs-bitmap = { path = "../skia-rs-bitmap" }
+skia-rs-image = { path = "../skia-rs-image" }
