@@ -9,17 +9,17 @@ A safe Rust rewrite of Google's [Skia](https://skia.org/) 2D graphics library, v
 > Full dependency graph & module status: **[`PORTING.md`](PORTING.md)**
 
 ```text
-Phase 1 (CPU Raster 8888):  [██░░░░░░░░░░░░░░░░░░]  2/19 modules (11%) — Layer 0 verified
-Overall Roadmap (Phases):   [░░░░░░░░░░░░░░░░░░░░]  0/5  phases  ( 0%) — Phase 1 in progress
+Phase 1 (CPU Raster 8888):  [██░░░░░░░░░░░░░░░░░░]  2/19   modules (10.5%) — Layer 0 done
+Overall Skia Rewrite:       [░░░░░░░░░░░░░░░░░░░░]  1/1442 files   ( 0.1%) — Phases completed: 0/5
 ```
 
-| Phase | Scope | Progress | Status |
-|---|---|---|---|
-| **Phase 1** | CPU raster backend (`config 8888`) | `2/19` modules | In progress (Layer 0 verified → Layer 1 next) |
-| **Phase 2** | Image codecs (`src/codec/`, `src/encode/`) | `0` | Pending |
-| **Phase 3** | SkSL shader compiler (`src/sksl/`) | `0` | Pending |
-| **Phase 4** | GPU backends (Ganesh, then Graphite) | `0` | Pending |
-| **Phase 5** | PDF, SVG, XML, and `modules/` | `0` | Pending |
+| Phase | Scope | Files Ported | Share of Skia | Status |
+|---|---|---|---|---|
+| **Phase 1** | CPU raster backend (`config 8888`) | `1 / 448` (`2/19` modules) | `31.1%` | In progress (Layer 0 done → Layer 1 next) |
+| **Phase 2** | Image codecs (`src/codec/`, `src/encode/`) | `0 / 62` | `4.3%` | Pending |
+| **Phase 3** | SkSL shader compiler (`src/sksl/`) | `0 / 121` | `8.4%` | Pending |
+| **Phase 4** | GPU backends (Ganesh, then Graphite) | `0 / 544` | `37.7%` | Pending |
+| **Phase 5** | PDF, SVG, XML, and `modules/` | `0 / 267` | `18.5%` | Pending |
 
 ## Repository Layout
 
