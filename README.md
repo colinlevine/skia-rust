@@ -4,19 +4,20 @@ A safe Rust rewrite of Google's [Skia](https://skia.org/) 2D graphics library, v
 
 ## Progress
 
-> **Current Step:** **Phase 1 Complete!** — All `19/19` CPU raster backend modules (`314` C++ files) are ported to `18` safe Rust (`#![forbid(unsafe_code)]`) crates, verified (`DM: 1000/1000 match`, `2644/2644` CPU unit tests, `427/427` Rust tests), cleaned up (314 replaced `.cpp` files & toggles removed; tagged `phase1-pre-cleanup`), and benchmarked in **[`BENCHMARKS.md`](BENCHMARKS.md)** (`-6.9%` GM runtime, `-5.9%` clean `libskia.a` build time). Ready for Phase 2 (Image Codecs) upon approval.
+> **Current Step:** **Phase 1 Complete (`phase1-complete`), Phase 2 Planned!** — All `19/19` CPU raster backend modules (`314` C++ files) are ported to `18` safe Rust (`#![forbid(unsafe_code)]`) crates, verified (`DM: 1000/1000 match`, `2644/2644` CPU unit tests, `427/427` Rust tests), cleaned up (314 replaced `.cpp` files & toggles removed), benchmarked in **[`BENCHMARKS.md`](BENCHMARKS.md)** (`-6.9%` GM runtime, `-5.9%` clean `libskia.a` build, `-4.0%` clean `dm` build), and tagged `phase1-complete`. The **Phase 2 (Image Codecs)** plan (`9` modules, `62` files) is finalized in **[`PORTING.md`](PORTING.md)** — ready to start `P2.0` upon approval.
 >
 > Full dependency graph & module status: **[`PORTING.md`](PORTING.md)** | Performance A/B report: **[`BENCHMARKS.md`](BENCHMARKS.md)**
 
 ```text
-Phase 1 (CPU Raster 8888):  [####################]  19/19   modules (100.0%) - Complete (cleaned up & benchmarked)
-Overall Skia Rewrite:       [####----------------] 314/1427 files   (22.0%) - Phases completed: 1/6
+Phase 1 (CPU Raster 8888):  [####################]  19/19   modules (100.0%) - Complete (tagged phase1-complete)
+Phase 2 (Image Codecs):     [--------------------]   0/9    modules (  0.0%) - Planned (ready for P2.0)
+Overall Skia Rewrite:       [####----------------] 314/1427 files   ( 22.0%) - Phases completed: 1/6
 ```
 
 | Phase | Scope | Files Ported | Share of Skia | Status |
 |---|---|---|---|---|
-| **Phase 1** | CPU raster backend (`config 8888`) | `314 / 314` (`19/19` modules) | `22.0%` | **Complete** (`DM: 1000/1000`, cleaned up, [`BENCHMARKS.md`](BENCHMARKS.md)) |
-| **Phase 2** | Image codecs (`src/codec/`, `src/encode/`) | `0 / 62` | `4.3%` | Pending |
+| **Phase 1** | CPU raster backend (`config 8888`) | `314 / 314` (`19/19` modules) | `22.0%` | **Complete** (`DM: 1000/1000`, `phase1-complete`, [`BENCHMARKS.md`](BENCHMARKS.md)) |
+| **Phase 2** | Image codecs (`src/codec/`, `src/encode/`) | `0 / 62` (`0/9` modules) | `4.3%` | **Planned** ([`PORTING.md`](PORTING.md), ready for `P2.0`) |
 | **Phase 3** | SkSL shader compiler & `SkRuntimeEffect` (`src/sksl/`, `SkRuntime*`) | `0 / 128` | `9.0%` | Pending |
 | **Phase 4** | GPU backends (Ganesh, then Graphite; `src/gpu/`, `src/text/gpu/`) | `0 / 559` | `39.2%` | Pending |
 | **Phase 5** | PDF, SVG, XML, XPS & `modules/` | `0 / 248` | `17.4%` | Pending |
@@ -31,7 +32,7 @@ At a high level, every module follows the same loop:
 1. **Unchanged C++ API & untouched baseline:** `skia-baseline/` and `skia-rewrite/{include,gm,tests,dm,bench}` stay untouched so upstream Skia's own test suite and golden masters validate every change.
 2. **Safe Rust crates + thin FFI boundary:** Each Skia subsystem is rewritten in a `#![forbid(unsafe_code)]` Rust crate under `skia-rewrite/rust/crates/`, wired behind a thin C++/Rust FFI layer (`skia-rs-ffi` + `src/rust_bridge/`) and a per-module GN toggle (`skia_rust_<module>`).
 3. **Bit-exact verification on every commit:** Before landing on `main`, each module must pass all Rust unit tests, all `2644` Skia CPU unit tests, and a `1000/1000` bit-exact GM hash match against `skia-baseline/out/dm/dm.json` via [`tools/verify_dm/`](tools/verify_dm/).
-4. **End-of-phase performance A/B check & cleanup:** Once a phase reaches 100%, we tag `phase<N>-pre-cleanup`, remove that phase's replaced `.cpp` files and toggles so Rust is unconditional, verify a clean build, and log a baseline-vs-Rust performance comparison (runtime, compile time, binary size).
+4. **End-of-phase performance A/B check & cleanup:** Once a phase reaches 100%, we tag `phase<N>-pre-cleanup`, remove that phase's replaced `.cpp` files and toggles so Rust is unconditional, verify a clean build, log a baseline-vs-Rust performance comparison (runtime, compile time, binary size) in [`BENCHMARKS.md`](BENCHMARKS.md), and tag `phase<N>-complete`.
 
 ## Repository Layout
 
