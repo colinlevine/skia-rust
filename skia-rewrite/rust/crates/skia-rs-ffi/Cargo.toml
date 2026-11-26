@@ -18,4 +18,5 @@ skia-rs-raster = { path = "../skia-rs-raster" }
 skia-rs-bitmap = { path = "../skia-rs-bitmap" }
 skia-rs-image = { path = "../skia-rs-image" }
 skia-rs-scan = { path = "../skia-rs-scan" }
+skia-rs-pathops = { path = "../skia-rs-pathops" }
 skia-rs-colorfilters = { path = "../skia-rs-colorfilters" }

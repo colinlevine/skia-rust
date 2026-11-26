@@ -1242,6 +1242,46 @@ skia_source_set("pathops") {
   configs = skia_library_configs
   public = skia_pathops_public
   sources = skia_pathops_sources
+  if (skia_rust_pathops) {
+    sources -= [
+      "//src/pathops/SkAddIntersections.cpp",
+      "//src/pathops/SkDConicLineIntersection.cpp",
+      "//src/pathops/SkDCubicLineIntersection.cpp",
+      "//src/pathops/SkDCubicToQuads.cpp",
+      "//src/pathops/SkDLineIntersection.cpp",
+      "//src/pathops/SkDQuadLineIntersection.cpp",
+      "//src/pathops/SkIntersections.cpp",
+      "//src/pathops/SkOpAngle.cpp",
+      "//src/pathops/SkOpBuilder.cpp",
+      "//src/pathops/SkOpCoincidence.cpp",
+      "//src/pathops/SkOpContour.cpp",
+      "//src/pathops/SkOpCubicHull.cpp",
+      "//src/pathops/SkOpEdgeBuilder.cpp",
+      "//src/pathops/SkOpSegment.cpp",
+      "//src/pathops/SkOpSpan.cpp",
+      "//src/pathops/SkPathOpsAsWinding.cpp",
+      "//src/pathops/SkPathOpsCommon.cpp",
+      "//src/pathops/SkPathOpsConic.cpp",
+      "//src/pathops/SkPathOpsCubic.cpp",
+      "//src/pathops/SkPathOpsCurve.cpp",
+      "//src/pathops/SkPathOpsDebug.cpp",
+      "//src/pathops/SkPathOpsLine.cpp",
+      "//src/pathops/SkPathOpsOp.cpp",
+      "//src/pathops/SkPathOpsQuad.cpp",
+      "//src/pathops/SkPathOpsRect.cpp",
+      "//src/pathops/SkPathOpsSimplify.cpp",
+      "//src/pathops/SkPathOpsTSect.cpp",
+      "//src/pathops/SkPathOpsTightBounds.cpp",
+      "//src/pathops/SkPathOpsTypes.cpp",
+      "//src/pathops/SkPathOpsWinding.cpp",
+      "//src/pathops/SkPathWriter.cpp",
+      "//src/pathops/SkReduceOrder.cpp",
+    ]
+    sources += [
+      "src/rust_bridge/SkPathOpsInternal_rust.cpp",
+      "src/rust_bridge/SkPathOps_rust.cpp",
+    ]
+  }
   deps = [ ":core" ]
 }
 

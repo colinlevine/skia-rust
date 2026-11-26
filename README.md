@@ -4,18 +4,18 @@ A safe Rust rewrite of Google's [Skia](https://skia.org/) 2D graphics library, v
 
 ## Progress
 
-> **Current Step:** **Phase 1 — Layer 3→4 (PathOps & Shaders)** — Completed `skia-rs-colorfilters` (Layer 4.2, 13 files: `SkColorFilter`, `SkBlenders`, `SkColorMatrix`, `SkColorMatrixFilter`, `SkHighContrastFilter`, `src/effects/colorfilters/*` except `SkRuntimeColorFilter`; `DM: 1000/1000 match`, `2644/2644` CPU unit tests); `skia-rs-pathops` and `skia-rs-shaders` in flight.
+> **Current Step:** **Phase 1 — Layer 4 (Shaders, Effects & ImageFilters)** — Completed `skia-rs-pathops` (Layer 3.1, all 32 files in `src/pathops/*`; `DM: 1000/1000 match`, `2644/2644` CPU unit tests), finishing **100% of Layer 3!** Wiring `skia-rs-shaders` next; `skia-rs-effects` and `skia-rs-imagefilters` in flight.
 >
 > Full dependency graph & module status: **[`PORTING.md`](PORTING.md)**
 
 ```text
-Phase 1 (CPU Raster 8888):  [#############-------]  12/19   modules (63.2%) - Layer 3/4 in progress
-Overall Skia Rewrite:       [##------------------] 153/1442 files   (10.6%) - Phases completed: 0/5
+Phase 1 (CPU Raster 8888):  [##############------]  13/19   modules (68.4%) - Layer 4 in progress
+Overall Skia Rewrite:       [###-----------------] 185/1442 files   (12.8%) - Phases completed: 0/5
 ```
 
 | Phase | Scope | Files Ported | Share of Skia | Status |
 |---|---|---|---|---|
-| **Phase 1** | CPU raster backend (`config 8888`) | `153 / 448` (`12/19` modules) | `31.1%` | In progress (Layers 0–2, `scan`, `raster`, `bitmap`+`image`, `colorfilters` done; `pathops`/`shaders` in flight) |
+| **Phase 1** | CPU raster backend (`config 8888`) | `185 / 448` (`13/19` modules) | `31.1%` | In progress (Layers 0–3 + `colorfilters` done; `shaders`/`effects`/`imagefilters` in flight) |
 | **Phase 2** | Image codecs (`src/codec/`, `src/encode/`) | `0 / 62` | `4.3%` | Pending |
 | **Phase 3** | SkSL shader compiler (`src/sksl/`) | `0 / 121` | `8.4%` | Pending |
 | **Phase 4** | GPU backends (Ganesh, then Graphite) | `0 / 544` | `37.7%` | Pending |
