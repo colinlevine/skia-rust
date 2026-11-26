@@ -2121,6 +2121,24 @@ skia_source_set("core") {
     sources -= [ "//src/core/SkMD5.cpp" ]
     sources += [ "src/rust_bridge/SkMD5_rust.cpp" ]
   }
+
+  if (skia_rust_math) {
+    sources -= [
+      "//src/core/SkBase64.cpp",
+      "//src/core/SkBezierCurves.cpp",
+      "//src/core/SkChecksum.cpp",
+      "//src/core/SkCubicMap.cpp",
+      "//src/core/SkCubics.cpp",
+      "//src/core/SkFloatingPoint.cpp",
+      "//src/core/SkHalf.cpp",
+      "//src/core/SkMathPriv.cpp",
+      "//src/core/SkQuads.cpp",
+      "//src/core/SkSafeMath.cpp",
+      "//src/core/SkScalar.cpp",
+      "//src/core/SkUTF.cpp",
+    ]
+    sources += [ "src/rust_bridge/SkMath_rust.cpp" ]
+  }
 }
 
 skia_component("skia") {
@@ -2187,6 +2205,10 @@ skia_component("skia") {
 
   sources = []
   sources += skia_utils_private
+  if (skia_rust_math) {
+    sources -= [ "//src/utils/SkFloatToDecimal.cpp" ]
+    sources += [ "src/rust_bridge/SkFloatToDecimal_rust.cpp" ]
+  }
   sources += skia_utils_chromium
   sources += skia_effects_sources
   sources += skia_colorfilters_sources

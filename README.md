@@ -4,18 +4,18 @@ A safe Rust rewrite of Google's [Skia](https://skia.org/) 2D graphics library, v
 
 ## Progress
 
-> **Current Step:** **Phase 1 — Layer 0 (Foundations & Rust FFI Bridge)** — Rust Cargo workspace, GN bridge, pure-Rust `verify-dm` harness, and `SkMD5` smoke test verified (`DM: 1000/1000 match`, `2644/2644` CPU unit tests); next up: Layer 1 (`skia-rs-math` → `skia-rs-geometry`).
+> **Current Step:** **Phase 1 — Layer 1 (Core Math & Geometry)** — Completed `skia-rs-math` (14 files: `SkMD5`, `SkBase64`, `SkChecksum`, `SkHalf`, `SkScalar`, `SkFloatingPoint`, `SkSafeMath`, `SkMathPriv`, `SkQuads`, `SkCubics`, `SkBezierCurves`, `SkCubicMap`, `SkUTF`, `SkFloatToDecimal`; `DM: 1000/1000 match`, `2644/2644` CPU unit tests); next up: `skia-rs-geometry`.
 >
 > Full dependency graph & module status: **[`PORTING.md`](PORTING.md)**
 
 ```text
-Phase 1 (CPU Raster 8888):  [##------------------]   2/19   modules (10.5%) - Layer 0 done
-Overall Skia Rewrite:       [--------------------]   1/1442 files   ( 0.1%) - Phases completed: 0/5
+Phase 1 (CPU Raster 8888):  [###-----------------]   3/19   modules (15.8%) - Layer 1 in progress
+Overall Skia Rewrite:       [--------------------]  14/1442 files   ( 1.0%) - Phases completed: 0/5
 ```
 
 | Phase | Scope | Files Ported | Share of Skia | Status |
 |---|---|---|---|---|
-| **Phase 1** | CPU raster backend (`config 8888`) | `1 / 448` (`2/19` modules) | `31.1%` | In progress (Layer 0 done → Layer 1 next) |
+| **Phase 1** | CPU raster backend (`config 8888`) | `14 / 448` (`3/19` modules) | `31.1%` | In progress (`skia-rs-math` done → `skia-rs-geometry` next) |
 | **Phase 2** | Image codecs (`src/codec/`, `src/encode/`) | `0 / 62` | `4.3%` | Pending |
 | **Phase 3** | SkSL shader compiler (`src/sksl/`) | `0 / 121` | `8.4%` | Pending |
 | **Phase 4** | GPU backends (Ganesh, then Graphite) | `0 / 544` | `37.7%` | Pending |
