@@ -2142,20 +2142,28 @@ skia_source_set("core") {
 
   if (skia_rust_geometry) {
     sources -= [
+      "//src/core/SkCubicClipper.cpp",
+      "//src/core/SkEdgeClipper.cpp",
+      "//src/core/SkGeometry.cpp",
+      "//src/core/SkLineClipper.cpp",
       "//src/core/SkM44.cpp",
       "//src/core/SkMatrix.cpp",
       "//src/core/SkMatrixInvert.cpp",
       "//src/core/SkPoint.cpp",
       "//src/core/SkPoint3.cpp",
+      "//src/core/SkQuadClipper.cpp",
       "//src/core/SkRRect.cpp",
       "//src/core/SkRSXform.cpp",
       "//src/core/SkRect.cpp",
       "//src/core/SkVertState.cpp",
+      "//src/core/SkVertices.cpp",
     ]
     sources += [
       "src/rust_bridge/SkGeometryBasic_rust.cpp",
+      "src/rust_bridge/SkGeometryCurves_rust.cpp",
       "src/rust_bridge/SkMatrix_rust.cpp",
       "src/rust_bridge/SkRRect_rust.cpp",
+      "src/rust_bridge/SkVertices_rust.cpp",
     ]
   }
 }

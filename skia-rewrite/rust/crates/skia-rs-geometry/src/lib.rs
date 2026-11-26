@@ -1,15 +1,21 @@
 #![forbid(unsafe_code)]
 
+pub mod cubic_clipper;
+pub mod edge_clipper;
+pub mod geometry;
+pub mod line_clipper;
 pub mod m44;
 pub mod matrix;
 pub mod matrix22;
 pub mod matrix_invert;
 pub mod point;
 pub mod point3;
+pub mod quad_clipper;
 pub mod rect;
 pub mod rrect;
 pub mod rsxform;
 pub mod vert_state;
+pub mod vertices;
 
 pub use m44::{M44, V2, V3, V4};
 pub use matrix::Matrix;

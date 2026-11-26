@@ -4,6 +4,7 @@
 //! use `#![forbid(unsafe_code)]`.
 
 pub mod geometry;
+pub mod geometry_curves;
 pub mod math;
 pub mod matrix_rrect;
 pub mod md5;
