@@ -113,7 +113,7 @@ flowchart TD
 | # | Module / Crate | GN Flag | Key Skia Files Covered | Depends On | Parallel Group | Status |
 |---|---|---|---|---|---|---|
 | 1.1 | `skia-rs-math` | `skia_rust_math` | `SkScalar`, `SkFloatingPoint`, `SkHalf`, `SkSafeMath`, `SkMathPriv`, `SkMD5`, `SkChecksum`, `SkBase64`, `SkCubicMap`, `SkQuads`, `SkCubics`, `SkBezierCurves`, `SkUTF`, `SkFloatToDecimal` | 0.2 | Solo | **Done** (`DM: 1000/1000`) |
-| 1.2 | `skia-rs-geometry` | `skia_rust_geometry` | `SkPoint`, `SkPoint3`, `SkRect`, `SkRRect`, `SkRSXform`, `SkMatrix`, `SkMatrixInvert`, `SkM44`, `SkMatrix22`, `SkGeometry`, `SkLineClipper`, `SkQuadClipper`, `SkCubicClipper`, `SkEdgeClipper`, `SkVertices`, `SkVertState` | 1.1 | Solo | Planned |
+| 1.2 | `skia-rs-geometry` | `skia_rust_geometry` | `SkPoint`, `SkPoint3`, `SkRect`, `SkRRect`, `SkRSXform`, `SkMatrix`, `SkMatrixInvert`, `SkM44`, `SkMatrix22`, `SkGeometry`, `SkLineClipper`, `SkQuadClipper`, `SkCubicClipper`, `SkEdgeClipper`, `SkVertices`, `SkVertState` | 1.1 | Solo | **In progress** (10/16 files, `DM: 1000/1000`) |
 
 ### Layer 2 — Core Primitives & Data Structures (Fan Out: 4 Agents)
 | # | Module / Crate | GN Flag | Key Skia Files Covered | Depends On | Parallel Group | Status |

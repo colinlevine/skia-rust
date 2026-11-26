@@ -2139,6 +2139,25 @@ skia_source_set("core") {
     ]
     sources += [ "src/rust_bridge/SkMath_rust.cpp" ]
   }
+
+  if (skia_rust_geometry) {
+    sources -= [
+      "//src/core/SkM44.cpp",
+      "//src/core/SkMatrix.cpp",
+      "//src/core/SkMatrixInvert.cpp",
+      "//src/core/SkPoint.cpp",
+      "//src/core/SkPoint3.cpp",
+      "//src/core/SkRRect.cpp",
+      "//src/core/SkRSXform.cpp",
+      "//src/core/SkRect.cpp",
+      "//src/core/SkVertState.cpp",
+    ]
+    sources += [
+      "src/rust_bridge/SkGeometryBasic_rust.cpp",
+      "src/rust_bridge/SkMatrix_rust.cpp",
+      "src/rust_bridge/SkRRect_rust.cpp",
+    ]
+  }
 }
 
 skia_component("skia") {
@@ -2208,6 +2227,10 @@ skia_component("skia") {
   if (skia_rust_math) {
     sources -= [ "//src/utils/SkFloatToDecimal.cpp" ]
     sources += [ "src/rust_bridge/SkFloatToDecimal_rust.cpp" ]
+  }
+  if (skia_rust_geometry) {
+    sources -= [ "//src/utils/SkMatrix22.cpp" ]
+    sources += [ "src/rust_bridge/SkMatrix22_rust.cpp" ]
   }
   sources += skia_utils_chromium
   sources += skia_effects_sources

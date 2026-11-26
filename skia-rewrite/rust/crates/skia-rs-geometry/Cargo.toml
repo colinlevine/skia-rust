@@ -1,0 +1,8 @@
+[package]
+name = "skia-rs-geometry"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+skia-rs-math = { path = "../skia-rs-math" }
