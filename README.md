@@ -29,7 +29,8 @@ Overall Skia Rewrite:       [##------------------] 129/1442 files   ( 8.9%) - Ph
 - [`rust-toolchain.toml`](rust-toolchain.toml) — Pinned Rust toolchain version (`1.100.0`).
 - [`tools/verify_dm/`](tools/verify_dm/) — Safe Rust verification harness comparing `skia-rewrite/out/Rust/dm` against `skia-baseline/out/dm/dm.json` and checking protected paths.
 - [`skia-baseline/`](skia-baseline/) — Untouched pinned upstream C++ Skia checkout (read-only forever). Build artifacts (`skia-baseline/out/Original/`) and reference hashes (`skia-baseline/out/dm/dm.json`) live here and are git-ignored.
-- [`skia-rewrite/`](skia-rewrite/) — Working copy of Skia containing the safe Rust crates (`skia-rewrite/rust/`), C++/Rust FFI bridges (`skia-rewrite/src/rust_bridge/`), and Rust builds (`skia-rewrite/out/Rust/`). Its `gm/`, `tests/`, `dm/`, `bench/`, and `include/` directories remain identical to `skia-baseline/`. Original C++ files remain in `skia-rewrite/` until their phase is ported and verified (allowing incremental builds and C++/Rust bisect toggles), and each phase's replaced C++ files are cleaned up once that phase is complete.
+- [`skia-rewrite/`](skia-rewrite/) — Working copy of Skia containing the safe Rust crates (`skia-rewrite/rust/`), C++/Rust FFI bridges (`skia-rewrite/src/rust_bridge/`), and Rust builds (`skia-rewrite/out/Rust/`). Its `gm/`, `tests/`, `dm/`, `bench/`, and `include/` directories remain identical to `skia-baseline/`.
+- **Post-phase cleanup:** Original C++ files remain in `skia-rewrite/` until their phase is ported and verified (allowing incremental builds and C++/Rust bisect toggles), and each phase's replaced C++ files are cleaned up once that phase is complete.
 
 ## Building and Running the Baseline
 
