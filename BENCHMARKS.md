@@ -57,7 +57,11 @@ cargo run --release --manifest-path tools/bench_ab/Cargo.toml -- --all
 
 ### 4. Summary Assessment
 
-No performance regressions were observed for Phase 1:
-- **Runtime:** Full 1,000-GM CPU rasterization is **6.9% faster** with **2.8% lower peak memory**; all 2,644 CPU unit tests are within `+4.6%` wall time (`+0.58s`) with **3.7% lower peak memory**.
-- **Compile time:** Clean `libskia.a` compilation is **5.9% faster** (`290.52s` vs `308.84s`), clean full `dm` is **4.0% faster** (`774.02s` vs `806.29s`), and even single-file `.rs` incremental rebuilds (`39–45s`) beat baseline C++ (`50.68s`) — all 18 safe Rust crates plus `skia-rs-ffi` compile from scratch in **10.64s**.
-- **Binary size:** Stripped `dm` is within `+3.1%` (`+1.3 MB`), and unstripped `dm` and `libskia.a` archives are smaller (`-3.6%` and `-7.8%`).
+- **Runtime:** Full 1,000-GM CPU rasterization is **6.9% faster** by 3-run median (with **2.8% lower peak memory**); all 2,644 CPU unit tests are within `+4.6%` wall time (`+0.58s`) with **3.7% lower peak memory**.
+- **Compile time:** Clean `libskia.a` compilation is **5.9% faster** (`290.52s` vs `308.84s`), clean full `dm` is **4.0% faster** (`774.02s` vs `806.29s`), and single-file `.rs` incremental rebuilds (`39–45s`) beat baseline C++ (`50.68s`) — all 18 safe Rust crates plus `skia-rs-ffi` compile from scratch in **10.64s**.
+- **Binary size:** Stripped `dm` is `+3.1%` (`+1.30 MB`), while unstripped `dm` (`-3.6%`) and `libskia.a` (`-7.8%`) are smaller.
+
+*Notes:*
+- **Unit tests (`+4.6%`):** Concentrated in tight-loop tests (`Path`, `PathOps`, geometry) making frequent small calls across the temporary C++/Rust FFI bridge, which blocks cross-language inlining until more callers move into Rust.
+- **Stripped `dm` (`+3.1%` / `+1.30 MB`) vs. unstripped/archive size:** Stripped `dm` reflects temporary C++/Rust bridge shims, `1,406` exported dynamic FFI symbols (`+237 KB`), and a one-time Rust `std` footprint (`~281 KB`). Unstripped `dm` and `libskia.a` are smaller primarily because Skia's release C++ build emits DWARF debug info (`-g`) while Cargo's release profile does not.
+- **GM variance:** Individual 20-thread runs span `6.46–8.42s` (Rust) and `7.38–8.40s` (baseline) due to thread-scheduling variance; total CPU time across all threads is at parity (`-0.5%`).
