@@ -50,9 +50,9 @@ This document tracks the dependency graph, module porting order, architecture, a
    - **Shared file owner:** The coordinator / designated bridge owner manages edits to existing lines in `skia-rewrite/BUILD.gn`, `skia-rewrite/gn/skia_rust.gni`, `skia-rewrite/rust/Cargo.toml`, and `skia-rewrite/rust/crates/skia-rs-ffi/src/lib.rs`. Module agents add self-contained crates (`skia-rewrite/rust/crates/skia-rs-<mod>/`), FFI submodules (`skia-rewrite/rust/crates/skia-rs-ffi/src/<mod>.rs`), and bridge shims (`skia-rewrite/src/rust_bridge/<mod>_rust.cpp`).
    - **Merge & Verify:** Merge one module at a time into `main`, run `cargo run --release --manifest-path tools/verify_dm/Cargo.toml` (`--src gm tests --nogpu --config 8888`, comparing all `1000/1000` `dm.json` hashes against `skia-baseline/out/dm/dm.json` and checking protected paths), update **both `PORTING.md` and the `README.md` Progress section/bar** in the same commit, commit with `<module>: <what changed> (DM: X/Y match)`, push `main`, and delete the merged branch and worktree.
 5. **Per-Phase Performance A/B Check**
-   - Once a phase is 100% ported and passes full correctness verification, run a reproducible A/B performance comparison between the untouched C++ baseline (`skia-baseline/`) and the Rust rewrite (`skia-rewrite/`, with the phase enabled and after cleanup) and record the results in `BENCHMARKS.md`:
+   - Once a phase is 100% ported and passes full correctness verification, run the safe Rust benchmark harness (`cargo run --release --manifest-path tools/bench_ab/Cargo.toml -- --all`) comparing the untouched C++ baseline (`skia-baseline/`) against the Rust rewrite (`skia-rewrite/`, after cleanup) and record the results in `BENCHMARKS.md`:
      - **Execution time & peak memory:** Median of 3 runs of `skia-baseline/out/Original/dm` vs `skia-rewrite/out/Rust/dm` on `--src gm --nogpu --config 8888` and `--src tests --nogpu --config 8888` (plus peak RSS reported by `dm`, and phase-appropriate workloads/microbenchmarks where applicable).
-     - **Compile time:** Clean `dm` build time (breaking out Rust `cargo build --release` vs C++ `ninja` time) compared against a clean C++ baseline build (timed in `/tmp` so `skia-baseline/` remains read-only), plus single-file incremental rebuild time.
+     - **Compile time:** Clean `libskia.a` and full `dm` build times (breaking out Rust `cargo build --release` vs C++ `ninja` time) compared against clean C++ baseline builds (timed in isolated `/tmp` symlink trees so `skia-baseline/` remains read-only), plus single-file incremental rebuild time.
      - **Binary size:** Unstripped and stripped `dm` binary size and `libskia_rs_ffi.a` size.
    - Any major performance regression (runtime or compile time) is investigated and resolved before moving to the next phase.
 6. **Post-Phase Cleanup**
@@ -61,7 +61,8 @@ This document tracks the dependency graph, module porting order, architecture, a
      1. Tag the current `main` as `phase<N>-pre-cleanup` (so the toggleable C++/Rust state remains permanently addressable if ever needed for bisecting).
      2. In a dedicated cleanup commit, delete only that phase's ported `.cpp` implementation files from `skia-rewrite/src/`, remove their entries from `skia-rewrite/gn/*.gni`, and remove their `skia_rust_<module>` flags from `skia-rewrite/gn/skia_rust.gni` / `BUILD.gn` so Rust is unconditional for completed phases.
      3. Keep any private headers (`src/**/*.h`) still included by unported C++ and keep all unported C++ code/directories in place until they are rewritten. `skia-baseline/` and `skia-rewrite/{include,tests,gm,dm,bench}` stay untouched.
-     4. Verify the cleanup commit with a full clean build and full `tools/verify_dm/` verification (`1000/1000` DM match + all CPU unit tests + protected paths), and log the Phase `<N>` Performance A/B Check (Section 5) results. If the build fails to link, a deleted file still had unported code: restore it and port the remainder first.
+     4. Verify the cleanup commit with a full clean build and full `tools/verify_dm/` verification (`1000/1000` DM match + all CPU unit tests + protected paths), and log the Phase `<N>` Performance A/B Check (Section 5) results in `BENCHMARKS.md`. If the build fails to link, a deleted file still had unported code: restore it and port the remainder first.
+     5. Once cleanup and `BENCHMARKS.md` are committed and pushed, tag `main` as `phase<N>-complete` (and push the tag) as the permanent milestone marker for that phase.
 
 ---
 
@@ -115,21 +116,21 @@ flowchart TD
 
 ---
 
-## Phase 1: Proposed Module Porting Order & Status Tracker
+## Phase 1: Module Porting Order & Status Tracker *(16 unique subagents + 1 coordinator = 17 logical agents, max 2 concurrent from Layer 3 onward)*
 
-### Layer 0 — Foundations & Infrastructure (Single Agent)
+### Layer 0 — Foundations & Infrastructure (Coordinator, 0 Subagents)
 | # | Module / Crate | GN Flag | Key Skia Files Covered | Depends On | Parallel Group | Status |
 |---|---|---|---|---|---|---|
 | 0.1 | `workspace-setup` | — | `skia-baseline/` rename + `skia-rewrite/` working copy + `tools/verify_dm/` (safe Rust) + `rust-toolchain.toml` (`1.100.0`) | — | Solo | **Done** |
 | 0.2 | `rust-bridge` | `skia_rust_md5` | `skia-rewrite/rust/Cargo.toml`, `crates/skia-rs-ffi`, `gn/skia_rust.gni`, `BUILD.gn` `skia_rs_ffi`, `SkMD5` bridge smoke test | 0.1 | Solo | **Done** |
 
-### Layer 1 — Core Math & Geometry (Single Agent)
+### Layer 1 — Core Math & Geometry (Coordinator, 0 Subagents)
 | # | Module / Crate | GN Flag | Key Skia Files Covered | Depends On | Parallel Group | Status |
 |---|---|---|---|---|---|---|
 | 1.1 | `skia-rs-math` | `skia_rust_math` | `SkScalar`, `SkFloatingPoint`, `SkHalf`, `SkSafeMath`, `SkMathPriv`, `SkMD5`, `SkChecksum`, `SkBase64`, `SkCubicMap`, `SkQuads`, `SkCubics`, `SkBezierCurves`, `SkUTF`, `SkFloatToDecimal` | 0.2 | Solo | **Done** (`DM: 1000/1000`) |
 | 1.2 | `skia-rs-geometry` | `skia_rust_geometry` | `SkPoint`, `SkPoint3`, `SkRect`, `SkRRect`, `SkRSXform`, `SkMatrix`, `SkMatrixInvert`, `SkM44`, `SkMatrix22`, `SkGeometry`, `SkLineClipper`, `SkQuadClipper`, `SkCubicClipper`, `SkEdgeClipper`, `SkVertices`, `SkVertState` | 1.1 | Solo | **Done** (`DM: 1000/1000`) |
 
-### Layer 2 — Core Primitives & Data Structures (Fan Out: 4 Agents)
+### Layer 2 — Core Primitives & Data Structures (4 Subagents, 4-way Parallel)
 | # | Module / Crate | GN Flag | Key Skia Files Covered | Depends On | Parallel Group | Status |
 |---|---|---|---|---|---|---|
 | 2.1 | `skia-rs-color` | `skia_rust_color` | `SkColor`, `SkColorSpace`, `SkColorSpaceXformSteps`, `SkColorTable`, `SkUnPreMultiply`, `SkImageInfo`, `SkBlendMode`, `SkBlendModeBlender`, `SkSwizzle`, `SkSwizzler_opts`, `SkConvertPixels`, `SkYUVMath`, `SkYUVAInfo`, `SkYUVAPixmaps`, `SkMasks` | 1.1, 1.2 | Wave A (4-way) | **Done** (`DM: 1000/1000`) |
@@ -137,28 +138,28 @@ flowchart TD
 | 2.3 | `skia-rs-region` | `skia_rust_region` | `SkRegion`, `SkRegion_path`, `SkAAClip`, `SkRasterClip`, `SkClipStack`, `SkClipStackUtils`, `SkRTree`, `SkBBHFactory` | 1.2 | Wave A (4-way) | **Done** (`DM: 1000/1000`) |
 | 2.4 | `skia-rs-core-types` | `skia_rust_core_types` | `SkData`, `SkDataTable`, `SkStream`, `SkBuffer`, `SkReadBuffer`, `SkWriteBuffer`, `SkWriter32`, `SkString`, `SkStringUtils`, `SkFlattenable`, `SkPaint`, `SkPaintPriv`, `SkDescriptor`, `SkMask`, `SkBlurMask`, `SkGaussFilter`, `SkMaskGamma`, `SkMaskCache` | 1.1 | Wave A (4-way) | **Done** (`DM: 1000/1000`) |
 
-### Layer 3 — Rasterization Core, PathOps & Pixel Surfaces (Fan Out: 4 Agents)
+### Layer 3 — Rasterization Core, PathOps & Pixel Surfaces (5 Subagents: 3.4 split into `bitmap` + `image`, max 2 Concurrent)
 | # | Module / Crate | GN Flag | Key Skia Files Covered | Depends On | Parallel Group | Status |
 |---|---|---|---|---|---|---|
-| 3.1 | `skia-rs-pathops` | `skia_rust_pathops` | All of `src/pathops/*` (`Op`, `Simplify`, `AsWinding`, `TightBounds`, `SkOpBuilder`) | 1.2, 2.2 | Wave B (4-way) | **Done** (`DM: 1000/1000`) |
-| 3.2 | `skia-rs-scan` | `skia_rust_scan` | `SkEdge`, `SkAnalyticEdge`, `SkEdgeBuilder`, `SkAlphaRuns`, `SkScan`, `SkScan_Path`, `SkScan_AntiPath`, `SkScan_AAAPath`, `SkScan_Hairline`, `SkScan_Antihair`, `SkDistanceFieldGen` | 1.2, 2.2, 2.3 | Wave B (4-way) | **Done** (`DM: 1000/1000`) |
-| 3.3 | `skia-rs-raster` | `skia_rust_raster` | `SkRasterPipeline`, `SkRasterPipelineBlitter`, `SkBlitter`, `SkBlitter_ARGB32`, `SkBlitter_A8`, `SkBlitter_Sprite`, `SkSpriteBlitter_ARGB32`, `SkBlitRow_D32`, `SkBlitRow_opts`, `SkBlitMask_opts`, `SkMemset_opts`, `SkOpts` | 1.2, 2.1, 2.3 | Wave B (4-way) | **Done** (`DM: 1000/1000`) |
-| 3.4 | `skia-rs-image` (`skia-rs-bitmap` + `skia-rs-image`) | `skia_rust_image` | `SkPixmap`, `SkPixmapDraw`, `SkPixelRef`, `SkMallocPixelRef`, `SkBitmap`, `SkBitmapCache`, `SkBitmapProcState`, `SkMipmap*`, `SkSpecialImage`, `SkImageGenerator`, `SkImage*`, `SkRescaleAndReadPixels`, `SkSurface*` | 1.2, 2.1, 2.4 | Wave B (4-way) | **Done** (`DM: 1000/1000`) |
+| 3.1 | `skia-rs-pathops` | `skia_rust_pathops` | All of `src/pathops/*` (`Op`, `Simplify`, `AsWinding`, `TightBounds`, `SkOpBuilder`) | 1.2, 2.2 | Wave B (2-way) | **Done** (`DM: 1000/1000`) |
+| 3.2 | `skia-rs-scan` | `skia_rust_scan` | `SkEdge`, `SkAnalyticEdge`, `SkEdgeBuilder`, `SkAlphaRuns`, `SkScan`, `SkScan_Path`, `SkScan_AntiPath`, `SkScan_AAAPath`, `SkScan_Hairline`, `SkScan_Antihair`, `SkDistanceFieldGen` | 1.2, 2.2, 2.3 | Wave B (2-way) | **Done** (`DM: 1000/1000`) |
+| 3.3 | `skia-rs-raster` | `skia_rust_raster` | `SkRasterPipeline`, `SkRasterPipelineBlitter`, `SkBlitter`, `SkBlitter_ARGB32`, `SkBlitter_A8`, `SkBlitter_Sprite`, `SkSpriteBlitter_ARGB32`, `SkBlitRow_D32`, `SkBlitRow_opts`, `SkBlitMask_opts`, `SkMemset_opts`, `SkOpts` | 1.2, 2.1, 2.3 | Wave B (2-way) | **Done** (`DM: 1000/1000`) |
+| 3.4 | `skia-rs-image` (`skia-rs-bitmap` + `skia-rs-image`) | `skia_rust_image` | `SkPixmap`, `SkPixmapDraw`, `SkPixelRef`, `SkMallocPixelRef`, `SkBitmap`, `SkBitmapCache`, `SkBitmapProcState`, `SkMipmap*`, `SkSpecialImage`, `SkImageGenerator`, `SkImage*`, `SkRescaleAndReadPixels`, `SkSurface*` | 1.2, 2.1, 2.4 | Wave B (2-way, 2 subagents) | **Done** (`DM: 1000/1000`) |
 
-### Layer 4 — Shaders, Color Filters, Path/Mask Effects & Image Filters (Fan Out: 3–4 Agents)
+### Layer 4 — Shaders, Color Filters, Path/Mask Effects & Image Filters (4 Subagents, max 2 Concurrent)
 | # | Module / Crate | GN Flag | Key Skia Files Covered | Depends On | Parallel Group | Status |
 |---|---|---|---|---|---|---|
-| 4.1 | `skia-rs-shaders` | `skia_rust_shaders` | `SkShader`, `SkShaderBase`, `SkColorShader`, `SkEmptyShader`, `SkBlendShader`, `SkColorFilterShader`, `SkCoordClampShader`, `SkLocalMatrixShader`, `SkTransformShader`, `SkTriColorShader`, `SkWorkingColorSpaceShader`, `SkImageShader`, `SkBitmapProcShader`, `SkPictureShader`, `SkPerlinNoiseShaderImpl`, `SkGainmapShader`, `src/shaders/gradients/*` | 2.1, 3.3, 3.4 | Wave C (3-way) | **Done** (`DM: 1000/1000`) |
-| 4.2 | `skia-rs-colorfilters` | `skia_rust_colorfilters` | `SkColorFilter`, `src/effects/colorfilters/*` (except `SkRuntimeColorFilter` → Phase 3), `SkColorMatrix`, `SkColorMatrixFilter`, `SkHighContrastFilter`, `SkBlenders` | 2.1, 3.3 | Wave C (3-way) | **Done** (`DM: 1000/1000`) |
-| 4.3 | `skia-rs-effects` | `skia_rust_effects` | `SkPathEffect`, `Sk1DPathEffect`, `Sk2DPathEffect`, `SkCornerPathEffect`, `SkDashPathEffect`, `SkDiscretePathEffect`, `SkTrimPathEffect`, `SkMaskFilter`, `SkBlurMaskFilterImpl`, `SkMaskBlurFilter`, `SkBlurEngine`, `SkEmbossMask*`, `SkShaderMaskFilterImpl`, `SkTableMaskFilter`, `SkDrawShadowInfo`, `SkShadowTessellator`, `SkShadowUtils` | 2.2, 2.4, 4.1 | Wave C / D | **Done** (`DM: 1000/1000`) |
-| 4.4 | `skia-rs-imagefilters` | `skia_rust_imagefilters` | `SkImageFilter`, `SkImageFilterTypes`, `SkImageFilterCache`, `SkLocalMatrixImageFilter`, `src/effects/imagefilters/*` (except `SkRuntimeImageFilter` → Phase 3) | 3.4, 4.1, 4.2, 4.3 | Wave D | **Done** (`DM: 1000/1000`) |
+| 4.1 | `skia-rs-shaders` | `skia_rust_shaders` | `SkShader`, `SkShaderBase`, `SkColorShader`, `SkEmptyShader`, `SkBlendShader`, `SkColorFilterShader`, `SkCoordClampShader`, `SkLocalMatrixShader`, `SkTransformShader`, `SkTriColorShader`, `SkWorkingColorSpaceShader`, `SkImageShader`, `SkBitmapProcShader`, `SkPictureShader`, `SkPerlinNoiseShaderImpl`, `SkGainmapShader`, `src/shaders/gradients/*` | 2.1, 3.3, 3.4 | Wave C (2-way) | **Done** (`DM: 1000/1000`) |
+| 4.2 | `skia-rs-colorfilters` | `skia_rust_colorfilters` | `SkColorFilter`, `src/effects/colorfilters/*` (except `SkRuntimeColorFilter` → Phase 3), `SkColorMatrix`, `SkColorMatrixFilter`, `SkHighContrastFilter`, `SkBlenders` | 2.1, 3.3 | Wave C (2-way) | **Done** (`DM: 1000/1000`) |
+| 4.3 | `skia-rs-effects` | `skia_rust_effects` | `SkPathEffect`, `Sk1DPathEffect`, `Sk2DPathEffect`, `SkCornerPathEffect`, `SkDashPathEffect`, `SkDiscretePathEffect`, `SkTrimPathEffect`, `SkMaskFilter`, `SkBlurMaskFilterImpl`, `SkMaskBlurFilter`, `SkBlurEngine`, `SkEmbossMask*`, `SkShaderMaskFilterImpl`, `SkTableMaskFilter`, `SkDrawShadowInfo`, `SkShadowTessellator`, `SkShadowUtils` | 2.2, 2.4, 4.1 | Wave D (2-way) | **Done** (`DM: 1000/1000`) |
+| 4.4 | `skia-rs-imagefilters` | `skia_rust_imagefilters` | `SkImageFilter`, `SkImageFilterTypes`, `SkImageFilterCache`, `SkLocalMatrixImageFilter`, `src/effects/imagefilters/*` (except `SkRuntimeImageFilter` → Phase 3) | 3.4, 4.1, 4.2, 4.3 | Wave D (2-way) | **Done** (`DM: 1000/1000`) |
 
-### Layer 5 — Text, Picture Recording & Canvas (Fan Out: 2 Agents, then Converge)
+### Layer 5 — Text, Picture Recording & Canvas (3 Subagents, max 2 Concurrent)
 | # | Module / Crate | GN Flag | Key Skia Files Covered | Depends On | Parallel Group | Status |
 |---|---|---|---|---|---|---|
-| 5.1 | `skia-rs-text` | `skia_rust_text` | `SkFont`, `SkFontMetricsPriv`, `SkFontDescriptor`, `SkFontMgr`, `SkTypeface`, `SkTypefaceCache`, `SkGlyph`, `SkScalerContext`, `SkStrike`, `SkStrikeCache`, `SkStrikeSpec`, `SkTextBlob`, `GlyphRun`, `SkGlyphRunPainter`, `SkTextUtils` (font parsing via Rust crates such as `skrifa`/`read-fonts` where appropriate) | 1.2, 2.2, 2.4, 3.3 | Wave D (parallel w/ 4.4) | **Done** (`DM: 1000/1000`) |
-| 5.2 | `skia-rs-picture` | `skia_rust_picture` | `SkRecord`, `SkRecords`, `SkRecordCanvas`, `SkRecordDraw`, `SkRecordOpts`, `SkPicture`, `SkPictureRecorder`, `SkPictureRecord`, `SkPicturePlayback`, `SkPictureData`, `SkPictureFlat`, `SkDrawable`, `SkRecordedDrawable`, `SkAnnotation`, `SkLatticeIter`, `SkMultiPictureDocument` | 2.2, 2.4, 4.1, 4.3, 4.4 | Wave E | **Done** (`DM: 1000/1000`) |
-| 5.3 | `skia-rs-canvas` | `skia_rust_canvas` | `SkDraw`, `SkDraw_atlas`, `SkDraw_text`, `SkDraw_vertices`, `SkDevice`, `SkBitmapDevice`, `SkClipStackDevice`, `SkCanvas`, `SkCanvas_Raster`, `SkCanvasPriv`, `SkOverdrawCanvas`, `SkNWayCanvas`, `SkNoDrawCanvas`, `SkNullCanvas`, `SkPaintFilterCanvas`, `SkCanvasStack`, `SkRecorder`, `RasterContext`, `src/cpu/Recorder` | 3.2, 3.3, 3.4, 4.4, 5.1, 5.2 | Final (Solo) | **Done** (`DM: 1000/1000`) |
+| 5.1 | `skia-rs-text` | `skia_rust_text` | `SkFont`, `SkFontMetricsPriv`, `SkFontDescriptor`, `SkFontMgr`, `SkTypeface`, `SkTypefaceCache`, `SkGlyph`, `SkScalerContext`, `SkStrike`, `SkStrikeCache`, `SkStrikeSpec`, `SkTextBlob`, `GlyphRun`, `SkGlyphRunPainter`, `SkTextUtils` | 1.2, 2.2, 2.4, 3.3 | Wave E (2-way) | **Done** (`DM: 1000/1000`) |
+| 5.2 | `skia-rs-picture` | `skia_rust_picture` | `SkRecord`, `SkRecords`, `SkRecordCanvas`, `SkRecordDraw`, `SkRecordOpts`, `SkPicture`, `SkPictureRecorder`, `SkPictureRecord`, `SkPicturePlayback`, `SkPictureData`, `SkPictureFlat`, `SkDrawable`, `SkRecordedDrawable`, `SkAnnotation`, `SkLatticeIter`, `SkMultiPictureDocument` | 2.2, 2.4, 4.1, 4.3, 4.4 | Wave E (2-way) | **Done** (`DM: 1000/1000`) |
+| 5.3 | `skia-rs-canvas` | `skia_rust_canvas` | `SkDraw`, `SkDraw_atlas`, `SkDraw_text`, `SkDraw_vertices`, `SkDevice`, `SkBitmapDevice`, `SkClipStackDevice`, `SkCanvas`, `SkCanvas_Raster`, `SkCanvasPriv`, `SkOverdrawCanvas`, `SkNWayCanvas`, `SkNoDrawCanvas`, `SkNullCanvas`, `SkPaintFilterCanvas`, `SkCanvasStack`, `SkRecorder`, `RasterContext`, `src/cpu/Recorder` | 3.2, 3.3, 3.4, 4.4, 5.1, 5.2 | Wave F (2-way w/ 5.2) | **Done** (`DM: 1000/1000`) |
 
 ---
 

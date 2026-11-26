@@ -2,6 +2,12 @@
 
 This file records reproducible A/B performance comparisons between the untouched upstream C++ baseline ([`skia-baseline/`](skia-baseline/)) and the safe Rust rewrite ([`skia-rewrite/`](skia-rewrite/)) after each completed phase (see [`PORTING.md`](PORTING.md) Section 5).
 
+Reproduce anytime with the safe Rust benchmark harness ([`tools/bench_ab/`](tools/bench_ab/)):
+
+```bash
+cargo run --release --manifest-path tools/bench_ab/Cargo.toml -- --all
+```
+
 ---
 
 ## Machine & Build Configuration
@@ -33,13 +39,13 @@ This file records reproducible A/B performance comparisons between the untouched
 | Build Measurement | Baseline C++ | Rust Rewrite (Phase 1 Unconditional) | Delta |
 |---|---:|---:|---:|
 | **Clean `libskia.a` build (`gn gen` + `ninja libskia.a`)** | `308.84s` *(gn `0.19s` + C++ `308.65s`)* | **`290.52s`** *(gn `0.17s` + Rust `11.56s` + C++ `278.78s`)* | **`-5.9%` (`-18.32s` faster)** |
-| **Clean Rust workspace (`cargo build --release` across all 19 crates)** | — | `10.64s` *(11.59s via ninja)* | — |
-| **Clean full `dm` build (`gn gen` + `ninja dm`, 2,842 targets incl. `gm/` & `tests/`)** | — | `774.02s` *(gn `0.19s` + Rust `11.59s` + C++/link `762.24s`)* | — |
-| **Incremental `dm` rebuild — single `.cpp` touch (`SkMath_rust.cpp`)** | — | `29.16s` *(includes full `dm` link)* | — |
-| **Incremental `dm` rebuild — root `.rs` touch (`skia-rs-math/src/lib.rs`)** | — | `39.05s` *(rebuilds dependent crates + thin-LTO staticlib + `dm` link)* | — |
-| **Incremental `dm` rebuild — leaf `.rs` touch (`skia-rs-canvas/src/lib.rs`)** | — | `45.65s` *(rebuilds crate + thin-LTO staticlib + `dm` link)* | — |
+| **Clean Rust workspace (`cargo build --release`, all 19 crates)** | N/A | `10.64s` *(11.59s via ninja)* | — |
+| **Clean full `dm` build (`gn gen` + `ninja dm`, incl. `gm/` & `tests/`)** | `806.29s` *(gn `0.17s` + C++/link `806.12s`)* | **`774.02s`** *(gn `0.19s` + Rust `11.59s` + C++/link `762.24s`)* | **`-4.0%` (`-32.27s` faster)** |
+| **Incremental `dm` rebuild — single `.cpp` touch** | `50.68s` *(`SkMathPriv.cpp`)* | **`29.16s`** *(`SkMath_rust.cpp`)* | **`-42.5%` (faster)** |
+| **Incremental `dm` rebuild — root `.rs` touch (`skia-rs-math/src/lib.rs`)** | `50.68s` *(vs baseline `.cpp`)* | **`39.05s`** *(rebuilds dependent crates + thin-LTO + `dm` link)* | **`-22.9%` (faster)** |
+| **Incremental `dm` rebuild — leaf `.rs` touch (`skia-rs-canvas/src/lib.rs`)** | `50.68s` *(vs baseline `.cpp`)* | **`45.65s`** *(rebuilds crate + thin-LTO + `dm` link)* | **`-9.9%` (faster)** |
 
-*Note: Clean baseline `libskia.a` was timed in an isolated `/tmp` build directory with read-only symlinks to `skia-baseline/` so `skia-baseline/` remained completely untouched.*
+*Note: All clean baseline builds and incremental `.cpp` touches were timed in isolated `/tmp` symlink trees (copying only the single touched `.cpp` file) so `skia-baseline/` remained completely untouched, including mtimes. Incremental rows are single-run measurements dominated by `ld` relinking the ~830–860 MB unstripped `dm` binary (~25–45s), tracked primarily to catch Cargo/LTO compile-time regressions across phases.*
 
 ### 3. Binary & Archive Size
 
@@ -53,5 +59,5 @@ This file records reproducible A/B performance comparisons between the untouched
 
 No performance regressions were observed for Phase 1:
 - **Runtime:** Full 1,000-GM CPU rasterization is **6.9% faster** with **2.8% lower peak memory**; all 2,644 CPU unit tests are within `+4.6%` wall time (`+0.58s`) with **3.7% lower peak memory**.
-- **Compile time:** Clean `libskia.a` compilation is **5.9% faster** than upstream C++ — all 18 safe Rust crates plus `skia-rs-ffi` compile from scratch in **10.64s**.
+- **Compile time:** Clean `libskia.a` compilation is **5.9% faster** (`290.52s` vs `308.84s`), clean full `dm` is **4.0% faster** (`774.02s` vs `806.29s`), and even single-file `.rs` incremental rebuilds (`39–45s`) beat baseline C++ (`50.68s`) — all 18 safe Rust crates plus `skia-rs-ffi` compile from scratch in **10.64s**.
 - **Binary size:** Stripped `dm` is within `+3.1%` (`+1.3 MB`), and unstripped `dm` and `libskia.a` archives are smaller (`-3.6%` and `-7.8%`).
