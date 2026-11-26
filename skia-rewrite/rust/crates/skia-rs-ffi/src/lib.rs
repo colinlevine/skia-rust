@@ -5,6 +5,7 @@
 
 pub mod bitmap;
 pub mod color;
+pub mod colorfilters;
 pub mod core_types;
 pub mod geometry;
 pub mod geometry_curves;

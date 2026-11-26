@@ -2359,6 +2359,11 @@ skia_source_set("core") {
       "src/rust_bridge/SkScan_rust.cpp",
     ]
   }
+
+  if (skia_rust_colorfilters) {
+    sources -= [ "//src/core/SkColorFilter.cpp" ]
+    sources += [ "src/rust_bridge/SkColorFilter_rust.cpp" ]
+  }
 }
 
 skia_component("skia") {
@@ -2443,6 +2448,27 @@ skia_component("skia") {
   sources += skia_utils_chromium
   sources += skia_effects_sources
   sources += skia_colorfilters_sources
+  if (skia_rust_colorfilters) {
+    sources -= [
+      "//src/effects/SkBlenders.cpp",
+      "//src/effects/SkColorMatrix.cpp",
+      "//src/effects/SkColorMatrixFilter.cpp",
+      "//src/effects/SkHighContrastFilter.cpp",
+      "//src/effects/colorfilters/SkBlendModeColorFilter.cpp",
+      "//src/effects/colorfilters/SkColorFilterBase.cpp",
+      "//src/effects/colorfilters/SkColorSpaceXformColorFilter.cpp",
+      "//src/effects/colorfilters/SkComposeColorFilter.cpp",
+      "//src/effects/colorfilters/SkGaussianColorFilter.cpp",
+      "//src/effects/colorfilters/SkMatrixColorFilter.cpp",
+      "//src/effects/colorfilters/SkTableColorFilter.cpp",
+      "//src/effects/colorfilters/SkWorkingFormatColorFilter.cpp",
+    ]
+    sources += [
+      "src/rust_bridge/SkBlenders_rust.cpp",
+      "src/rust_bridge/SkColorMatrix_rust.cpp",
+      "src/rust_bridge/SkColorFilterEffects_rust.cpp",
+    ]
+  }
   sources += skia_effects_imagefilter_sources
   sources += skia_codec_shared
   sources += skia_codec_decode_bmp
