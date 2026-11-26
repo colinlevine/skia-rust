@@ -10,4 +10,5 @@ crate-type = ["staticlib"]
 [dependencies]
 skia-rs-math = { path = "../skia-rs-math" }
 skia-rs-geometry = { path = "../skia-rs-geometry" }
+skia-rs-color = { path = "../skia-rs-color" }
 skia-rs-core-types = { path = "../skia-rs-core-types" }

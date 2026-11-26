@@ -4,18 +4,18 @@ A safe Rust rewrite of Google's [Skia](https://skia.org/) 2D graphics library, v
 
 ## Progress
 
-> **Current Step:** **Phase 1 — Layer 2 (Core Primitives & Data Structures)** — Completed `skia-rs-core-types` (18 files: `SkData`, `SkStream`, `SkBuffer`, `SkRead/WriteBuffer`, `SkWriter32`, `SkString`, `SkFlattenable`, `SkPaint`, `SkDescriptor`, `SkMask`, `SkBlurMask`, `SkGaussFilter`, `SkMaskGamma`, `SkMaskCache`; `DM: 1000/1000 match`, `2644/2644` CPU unit tests); finishing `skia-rs-color`, `skia-rs-path`, and `skia-rs-region` in parallel.
+> **Current Step:** **Phase 1 — Layer 2 (Core Primitives & Data Structures)** — Completed `skia-rs-color` (15 files: `SkColor`, `SkColorSpace`, `SkColorSpaceXformSteps`, `SkColorTable`, `SkUnPreMultiply`, `SkImageInfo`, `SkBlendMode*`, `SkSwizzl*`, `SkConvertPixels`, `SkYUV*`, `SkMasks`; `DM: 1000/1000 match`, `2644/2644` CPU unit tests) and `skia-rs-core-types` (18 files); finishing `skia-rs-path` and `skia-rs-region` in parallel.
 >
 > Full dependency graph & module status: **[`PORTING.md`](PORTING.md)**
 
 ```text
-Phase 1 (CPU Raster 8888):  [#####---------------]   5/19   modules (26.3%) - Layer 2 in progress
-Overall Skia Rewrite:       [#-------------------]  48/1442 files   ( 3.3%) - Phases completed: 0/5
+Phase 1 (CPU Raster 8888):  [######--------------]   6/19   modules (31.6%) - Layer 2 in progress
+Overall Skia Rewrite:       [#-------------------]  63/1442 files   ( 4.4%) - Phases completed: 0/5
 ```
 
 | Phase | Scope | Files Ported | Share of Skia | Status |
 |---|---|---|---|---|
-| **Phase 1** | CPU raster backend (`config 8888`) | `48 / 448` (`5/19` modules) | `31.1%` | In progress (`skia-rs-core-types` done; `color`/`path`/`region` in flight) |
+| **Phase 1** | CPU raster backend (`config 8888`) | `63 / 448` (`6/19` modules) | `31.1%` | In progress (`color` & `core-types` done; `path`/`region` in flight) |
 | **Phase 2** | Image codecs (`src/codec/`, `src/encode/`) | `0 / 62` | `4.3%` | Pending |
 | **Phase 3** | SkSL shader compiler (`src/sksl/`) | `0 / 121` | `8.4%` | Pending |
 | **Phase 4** | GPU backends (Ganesh, then Graphite) | `0 / 544` | `37.7%` | Pending |
@@ -29,7 +29,7 @@ Overall Skia Rewrite:       [#-------------------]  48/1442 files   ( 3.3%) - Ph
 - [`rust-toolchain.toml`](rust-toolchain.toml) — Pinned Rust toolchain version (`1.100.0`).
 - [`tools/verify_dm/`](tools/verify_dm/) — Safe Rust verification harness comparing `skia-rewrite/out/Rust/dm` against `skia-baseline/out/dm/dm.json` and checking protected paths.
 - [`skia-baseline/`](skia-baseline/) — Untouched pinned upstream C++ Skia checkout (read-only forever). Build artifacts (`skia-baseline/out/Original/`) and reference hashes (`skia-baseline/out/dm/dm.json`) live here and are git-ignored.
-- [`skia-rewrite/`](skia-rewrite/) — Working copy of Skia containing the safe Rust crates (`skia-rewrite/rust/`), C++/Rust FFI bridges (`skia-rewrite/src/rust_bridge/`), and Rust builds (`skia-rewrite/out/Rust/`). Its `gm/`, `tests/`, `dm/`, `bench/`, and `include/` directories remain identical to `skia-baseline/`.
+- [`skia-rewrite/`](skia-rewrite/) — Working copy of Skia containing the safe Rust crates (`skia-rewrite/rust/`), C++/Rust FFI bridges (`skia-rewrite/src/rust_bridge/`), and Rust builds (`skia-rewrite/out/Rust/`). Its `gm/`, `tests/`, `dm/`, `bench/`, and `include/` directories remain identical to `skia-baseline/`. Excess C++ implementation files under `skia-rewrite/src/` are kept temporarily during each phase for incremental builds and C++/Rust bisect toggles, and will be cleaned up after each completed phase.
 
 ## Building and Running the Baseline
 

@@ -2167,6 +2167,32 @@ skia_source_set("core") {
     ]
   }
 
+  if (skia_rust_color) {
+    sources -= [
+      "//src/core/SkBlendMode.cpp",
+      "//src/core/SkBlendModeBlender.cpp",
+      "//src/core/SkColor.cpp",
+      "//src/core/SkColorSpace.cpp",
+      "//src/core/SkColorSpaceXformSteps.cpp",
+      "//src/core/SkColorTable.cpp",
+      "//src/core/SkConvertPixels.cpp",
+      "//src/core/SkImageInfo.cpp",
+      "//src/core/SkMasks.cpp",
+      "//src/core/SkSwizzle.cpp",
+      "//src/core/SkSwizzler_opts.cpp",
+      "//src/core/SkUnPreMultiply.cpp",
+      "//src/core/SkYUVAInfo.cpp",
+      "//src/core/SkYUVAPixmaps.cpp",
+      "//src/core/SkYUVMath.cpp",
+    ]
+    sources += [
+      "src/rust_bridge/SkColor_rust.cpp",
+      "src/rust_bridge/SkColorSpace_rust.cpp",
+      "src/rust_bridge/SkSwizzleConvert_rust.cpp",
+      "src/rust_bridge/SkYUV_rust.cpp",
+    ]
+  }
+
   if (skia_rust_core_types) {
     sources -= [
       "//src/core/SkBlurMask.cpp",

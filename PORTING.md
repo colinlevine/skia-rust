@@ -8,7 +8,7 @@ This document tracks the dependency graph, module porting order, architecture, a
 
 | Phase | Target | Baseline Coverage | Status |
 |---|---|---|---|
-| **Phase 1** | CPU raster backend (`config 8888`) | Covered: `skia-baseline/out/dm/dm.json` (`1000` `8888` GM MD5 hashes) + `2644` CPU unit tests via `dm --src gm tests --nogpu --config 8888` | **Layer 2 (5/19 modules done)** |
+| **Phase 1** | CPU raster backend (`config 8888`) | Covered: `skia-baseline/out/dm/dm.json` (`1000` `8888` GM MD5 hashes) + `2644` CPU unit tests via `dm --src gm tests --nogpu --config 8888` | **Layer 2 (6/19 modules done)** |
 | **Phase 2** | Image codecs (`src/codec/`, `src/encode/`) | Needs baseline check (`--src image colorImage` + codec unit tests) before starting | Pending |
 | **Phase 3** | SkSL shader compiler (`src/sksl/`) | Covered by CPU SkSL unit tests + GMs (`--src gm tests --nogpu --config 8888`) | Pending |
 | **Phase 4** | GPU backends (Ganesh, then Graphite) | **Not yet covered** (`skia_use_gl = false`; needs GPU baseline before starting) | Pending |
@@ -48,6 +48,9 @@ This document tracks the dependency graph, module porting order, architecture, a
    - **Layers 2–5:** Up to **4 agents in parallel**, each in its own `git worktree`, branch (`port/<module>`), and build directory (`skia-rewrite/out/rust-<module>`), with `-j 5` per worker across 20 cores.
    - **Shared file owner:** The coordinator / designated bridge owner manages edits to existing lines in `skia-rewrite/BUILD.gn`, `skia-rewrite/gn/skia_rust.gni`, `skia-rewrite/rust/Cargo.toml`, and `skia-rewrite/rust/crates/skia-rs-ffi/src/lib.rs`. Module agents add self-contained crates (`skia-rewrite/rust/crates/skia-rs-<mod>/`), FFI submodules (`skia-rewrite/rust/crates/skia-rs-ffi/src/<mod>.rs`), and bridge shims (`skia-rewrite/src/rust_bridge/<mod>_rust.cpp`).
    - **Merge & Verify:** Merge one module at a time into `main`, run `cargo run --release --manifest-path tools/verify_dm/Cargo.toml` (`--src gm tests --nogpu --config 8888`, comparing all `1000/1000` `dm.json` hashes against `skia-baseline/out/dm/dm.json` and checking protected paths), update **both `PORTING.md` and the `README.md` Progress section/bar** in the same commit, commit with `<module>: <what changed> (DM: X/Y match)`, push `main`, and delete the merged branch and worktree.
+5. **Post-Phase Cleanup**
+   - While a phase is actively being ported, the original C++ `.cpp` files remain in `skia-rewrite/src/` so GN can compile unported neighbors incrementally and toggle individual modules between C++ and Rust for fast bisecting.
+   - Once a phase is 100% ported and passes full verification, run a dedicated cleanup commit removing that phase's replaced `.cpp` implementation files from `skia-rewrite/src/` (keeping `skia-baseline/` untouched as the read-only reference and keeping `skia-rewrite/{include,tests,gm,dm,bench}` intact).
 
 ---
 
@@ -118,7 +121,7 @@ flowchart TD
 ### Layer 2 — Core Primitives & Data Structures (Fan Out: 4 Agents)
 | # | Module / Crate | GN Flag | Key Skia Files Covered | Depends On | Parallel Group | Status |
 |---|---|---|---|---|---|---|
-| 2.1 | `skia-rs-color` | `skia_rust_color` | `SkColor`, `SkColorSpace`, `SkColorSpaceXformSteps`, `SkColorTable`, `SkUnPreMultiply`, `SkImageInfo`, `SkBlendMode`, `SkBlendModeBlender`, `SkSwizzle`, `SkSwizzler_opts`, `SkConvertPixels`, `SkYUVMath`, `SkYUVAInfo`, `SkYUVAPixmaps`, `SkMasks` | 1.1, 1.2 | Wave A (4-way) | Planned |
+| 2.1 | `skia-rs-color` | `skia_rust_color` | `SkColor`, `SkColorSpace`, `SkColorSpaceXformSteps`, `SkColorTable`, `SkUnPreMultiply`, `SkImageInfo`, `SkBlendMode`, `SkBlendModeBlender`, `SkSwizzle`, `SkSwizzler_opts`, `SkConvertPixels`, `SkYUVMath`, `SkYUVAInfo`, `SkYUVAPixmaps`, `SkMasks` | 1.1, 1.2 | Wave A (4-way) | **Done** (`DM: 1000/1000`) |
 | 2.2 | `skia-rs-path` | `skia_rust_path` | `SkPath`, `SkPathBuilder`, `SkPathData`, `SkPathIter`, `SkPathRaw`, `SkPathRawShapes`, `SkPathPriv`, `SkPathMeasure`, `SkContourMeasure`, `SkPathUtils`, `SkPath_interpolate`, `SkPath_serial`, `SkStroke`, `SkStrokeRec`, `SkStrokerPriv`, `SkDashPath`, `SkParsePath` | 1.1, 1.2 | Wave A (4-way) | Planned |
 | 2.3 | `skia-rs-region` | `skia_rust_region` | `SkRegion`, `SkRegion_path`, `SkAAClip`, `SkRasterClip`, `SkClipStack`, `SkClipStackUtils`, `SkRTree`, `SkBBHFactory` | 1.2 | Wave A (4-way) | Planned |
 | 2.4 | `skia-rs-core-types` | `skia_rust_core_types` | `SkData`, `SkDataTable`, `SkStream`, `SkBuffer`, `SkReadBuffer`, `SkWriteBuffer`, `SkWriter32`, `SkString`, `SkStringUtils`, `SkFlattenable`, `SkPaint`, `SkPaintPriv`, `SkDescriptor`, `SkMask`, `SkBlurMask`, `SkGaussFilter`, `SkMaskGamma`, `SkMaskCache` | 1.1 | Wave A (4-way) | **Done** (`DM: 1000/1000`) |
