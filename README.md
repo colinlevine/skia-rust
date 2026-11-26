@@ -4,18 +4,18 @@ A safe Rust rewrite of Google's [Skia](https://skia.org/) 2D graphics library, v
 
 ## Progress
 
-> **Current Step:** **Phase 1 — Layer 4→5 (Effects & Text)** — Completed `skia-rs-imagefilters` (Layer 4.4, 20 files: `SkImageFilter*`, `SkImageFilterTypes`, `SkImageFilterCache`, `SkLocalMatrixImageFilter`, and all 16 CPU `src/effects/imagefilters/*`; `DM: 1000/1000 match`, `2644/2644` CPU unit tests); `skia-rs-effects` and `skia-rs-text` in flight.
+> **Current Step:** **Phase 1 — Layer 5 (Text, Picture & Canvas)** — Completed `skia-rs-effects` (Layer 4.3, 19 files: PathEffects, MaskFilters, BlurEngine, Shadows; `DM: 1000/1000 match`, `2644/2644` CPU unit tests), finishing **100% of Layer 4!** Only Layer 5 remains (`skia-rs-text` and `skia-rs-picture` in flight, followed by `skia-rs-canvas`).
 >
 > Full dependency graph & module status: **[`PORTING.md`](PORTING.md)**
 
 ```text
-Phase 1 (CPU Raster 8888):  [################----]  15/19   modules (78.9%) - Layer 4/5 in progress
-Overall Skia Rewrite:       [###-----------------] 226/1442 files   (15.7%) - Phases completed: 0/5
+Phase 1 (CPU Raster 8888):  [#################---]  16/19   modules (84.2%) - Layer 5 in progress
+Overall Skia Rewrite:       [###-----------------] 245/1442 files   (17.0%) - Phases completed: 0/5
 ```
 
 | Phase | Scope | Files Ported | Share of Skia | Status |
 |---|---|---|---|---|
-| **Phase 1** | CPU raster backend (`config 8888`) | `226 / 448` (`15/19` modules) | `31.1%` | In progress (Layers 0–3, `shaders`, `colorfilters`, `imagefilters` done; `effects`/`text` in flight) |
+| **Phase 1** | CPU raster backend (`config 8888`) | `245 / 448` (`16/19` modules) | `31.1%` | In progress (Layers 0–4 100% done; `text`/`picture` in flight, `canvas` next) |
 | **Phase 2** | Image codecs (`src/codec/`, `src/encode/`) | `0 / 62` | `4.3%` | Pending |
 | **Phase 3** | SkSL shader compiler (`src/sksl/`) | `0 / 121` | `8.4%` | Pending |
 | **Phase 4** | GPU backends (Ganesh, then Graphite) | `0 / 544` | `37.7%` | Pending |

@@ -2442,6 +2442,24 @@ skia_source_set("core") {
       "src/rust_bridge/SkImageFilterTypes_rust.cpp",
     ]
   }
+
+  if (skia_rust_effects) {
+    sources -= [
+      "//src/core/SkBlurEngine.cpp",
+      "//src/core/SkBlurMaskFilterImpl.cpp",
+      "//src/core/SkDrawShadowInfo.cpp",
+      "//src/core/SkMaskBlurFilter.cpp",
+      "//src/core/SkMaskFilter.cpp",
+      "//src/core/SkMaskFilterBase.cpp",
+      "//src/core/SkPathEffect.cpp",
+    ]
+    sources += [
+      "src/rust_bridge/SkBlurEngine_rust.cpp",
+      "src/rust_bridge/SkDrawShadowInfo_rust.cpp",
+      "src/rust_bridge/SkMaskFilterCore_rust.cpp",
+      "src/rust_bridge/SkPathEffectCore_rust.cpp",
+    ]
+  }
 }
 
 skia_component("skia") {
@@ -2556,6 +2574,27 @@ skia_component("skia") {
       "//src/shaders/gradients/SkSweepGradient.cpp",
     ]
     sources += [ "src/rust_bridge/SkGradients_rust.cpp" ]
+  }
+  if (skia_rust_effects) {
+    sources -= [
+      "//src/effects/Sk1DPathEffect.cpp",
+      "//src/effects/Sk2DPathEffect.cpp",
+      "//src/effects/SkCornerPathEffect.cpp",
+      "//src/effects/SkDashPathEffect.cpp",
+      "//src/effects/SkDiscretePathEffect.cpp",
+      "//src/effects/SkEmbossMask.cpp",
+      "//src/effects/SkEmbossMaskFilter.cpp",
+      "//src/effects/SkShaderMaskFilterImpl.cpp",
+      "//src/effects/SkTableMaskFilter.cpp",
+      "//src/effects/SkTrimPathEffect.cpp",
+      "//src/utils/SkShadowTessellator.cpp",
+      "//src/utils/SkShadowUtils.cpp",
+    ]
+    sources += [
+      "src/rust_bridge/SkMaskFilterEffects_rust.cpp",
+      "src/rust_bridge/SkPathEffects_rust.cpp",
+      "src/rust_bridge/SkShadows_rust.cpp",
+    ]
   }
   sources += skia_effects_imagefilter_sources
   if (skia_rust_imagefilters) {

@@ -8,7 +8,7 @@ This document tracks the dependency graph, module porting order, architecture, a
 
 | Phase | Target | Baseline Coverage | Status |
 |---|---|---|---|
-| **Phase 1** | CPU raster backend (`config 8888`) | Covered: `skia-baseline/out/dm/dm.json` (`1000` `8888` GM MD5 hashes) + `2644` CPU unit tests via `dm --src gm tests --nogpu --config 8888` | **Layer 4→5 (15/19 modules done)** |
+| **Phase 1** | CPU raster backend (`config 8888`) | Covered: `skia-baseline/out/dm/dm.json` (`1000` `8888` GM MD5 hashes) + `2644` CPU unit tests via `dm --src gm tests --nogpu --config 8888` | **Layer 5 (16/19 modules done)** |
 | **Phase 2** | Image codecs (`src/codec/`, `src/encode/`) | Needs baseline check (`--src image colorImage` + codec unit tests) before starting | Pending |
 | **Phase 3** | SkSL shader compiler (`src/sksl/`) | Covered by CPU SkSL unit tests + GMs (`--src gm tests --nogpu --config 8888`) | Pending |
 | **Phase 4** | GPU backends (Ganesh, then Graphite) | **Not yet covered** (`skia_use_gl = false`; needs GPU baseline before starting) | Pending |
@@ -149,7 +149,7 @@ flowchart TD
 |---|---|---|---|---|---|---|
 | 4.1 | `skia-rs-shaders` | `skia_rust_shaders` | `SkShader`, `SkShaderBase`, `SkColorShader`, `SkEmptyShader`, `SkBlendShader`, `SkColorFilterShader`, `SkCoordClampShader`, `SkLocalMatrixShader`, `SkTransformShader`, `SkTriColorShader`, `SkWorkingColorSpaceShader`, `SkImageShader`, `SkBitmapProcShader`, `SkPictureShader`, `SkPerlinNoiseShaderImpl`, `SkGainmapShader`, `src/shaders/gradients/*` | 2.1, 3.3, 3.4 | Wave C (3-way) | **Done** (`DM: 1000/1000`) |
 | 4.2 | `skia-rs-colorfilters` | `skia_rust_colorfilters` | `SkColorFilter`, `src/effects/colorfilters/*` (except `SkRuntimeColorFilter` → Phase 3), `SkColorMatrix`, `SkColorMatrixFilter`, `SkHighContrastFilter`, `SkBlenders` | 2.1, 3.3 | Wave C (3-way) | **Done** (`DM: 1000/1000`) |
-| 4.3 | `skia-rs-effects` | `skia_rust_effects` | `SkPathEffect`, `Sk1DPathEffect`, `Sk2DPathEffect`, `SkCornerPathEffect`, `SkDashPathEffect`, `SkDiscretePathEffect`, `SkTrimPathEffect`, `SkMaskFilter`, `SkBlurMaskFilterImpl`, `SkMaskBlurFilter`, `SkBlurEngine`, `SkEmbossMask*`, `SkShaderMaskFilterImpl`, `SkTableMaskFilter`, `SkDrawShadowInfo`, `SkShadowTessellator`, `SkShadowUtils` | 2.2, 2.4, 4.1 | Wave C / D | Planned |
+| 4.3 | `skia-rs-effects` | `skia_rust_effects` | `SkPathEffect`, `Sk1DPathEffect`, `Sk2DPathEffect`, `SkCornerPathEffect`, `SkDashPathEffect`, `SkDiscretePathEffect`, `SkTrimPathEffect`, `SkMaskFilter`, `SkBlurMaskFilterImpl`, `SkMaskBlurFilter`, `SkBlurEngine`, `SkEmbossMask*`, `SkShaderMaskFilterImpl`, `SkTableMaskFilter`, `SkDrawShadowInfo`, `SkShadowTessellator`, `SkShadowUtils` | 2.2, 2.4, 4.1 | Wave C / D | **Done** (`DM: 1000/1000`) |
 | 4.4 | `skia-rs-imagefilters` | `skia_rust_imagefilters` | `SkImageFilter`, `SkImageFilterTypes`, `SkImageFilterCache`, `SkLocalMatrixImageFilter`, `src/effects/imagefilters/*` (except `SkRuntimeImageFilter` → Phase 3) | 3.4, 4.1, 4.2, 4.3 | Wave D | **Done** (`DM: 1000/1000`) |
 
 ### Layer 5 — Text, Picture Recording & Canvas (Fan Out: 2 Agents, then Converge)
