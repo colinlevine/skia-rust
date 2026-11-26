@@ -12,6 +12,7 @@ members = [
     "crates/skia-rs-image",
     "crates/skia-rs-scan",
     "crates/skia-rs-pathops",
+    "crates/skia-rs-shaders",
     "crates/skia-rs-colorfilters",
     "crates/skia-rs-ffi",
 ]
