@@ -1,0 +1,10 @@
+# How the reference baseline in baseline/out/ was produced.
+# Never regenerate unless deliberately moving to a new Skia version.
+
+[baseline]
+skia_commit     = "67badb88843a848541ffb57fb0e7a3fc88c48051"
+generated       = "2026-11-25"
+gn_args         = "is_debug = false skia_use_fontconfig = false skia_use_system_freetype2 = false skia_use_gl = false"
+dm_flags        = "--src gm tests --nogpu --config 8888 --writePath out/dm"
+nanobench_flags = "" # Not run yet; will be run when benchmarking during the optimization phase
+machine         = "x86_64, Linux, avx2"

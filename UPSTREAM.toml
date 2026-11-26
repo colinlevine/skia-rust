@@ -1,0 +1,8 @@
+# The Skia version this project replicates.
+# Change only when deliberately moving to a new Skia version.
+
+[skia]
+source    = "https://skia.googlesource.com/skia.git"
+branch    = "main"
+commit    = "67badb88843a848541ffb57fb0e7a3fc88c48051"
+committed = "2026-11-25"
