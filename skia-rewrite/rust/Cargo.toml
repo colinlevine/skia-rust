@@ -4,6 +4,7 @@ members = [
     "crates/skia-rs-math",
     "crates/skia-rs-geometry",
     "crates/skia-rs-color",
+    "crates/skia-rs-region",
     "crates/skia-rs-core-types",
     "crates/skia-rs-ffi",
 ]

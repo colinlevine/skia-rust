@@ -1248,6 +1248,10 @@ skia_source_set("pathops") {
 skia_source_set("clipstack_utils") {
   configs = skia_library_configs
   sources = skia_clipstack_utils_sources
+  if (skia_rust_region) {
+    sources -= [ "//src/utils/SkClipStackUtils.cpp" ]
+    sources += [ "src/rust_bridge/SkClipStackUtils_rust.cpp" ]
+  }
   deps = [
     ":core",
     ":pathops",
@@ -2190,6 +2194,26 @@ skia_source_set("core") {
       "src/rust_bridge/SkColorSpace_rust.cpp",
       "src/rust_bridge/SkSwizzleConvert_rust.cpp",
       "src/rust_bridge/SkYUV_rust.cpp",
+    ]
+  }
+
+  if (skia_rust_region) {
+    sources -= [
+      "//src/core/SkAAClip.cpp",
+      "//src/core/SkBBHFactory.cpp",
+      "//src/core/SkClipStack.cpp",
+      "//src/core/SkRTree.cpp",
+      "//src/core/SkRasterClip.cpp",
+      "//src/core/SkRegion.cpp",
+      "//src/core/SkRegion_path.cpp",
+    ]
+    sources += [
+      "src/rust_bridge/SkAAClip_rust.cpp",
+      "src/rust_bridge/SkClipStack_rust.cpp",
+      "src/rust_bridge/SkRTree_rust.cpp",
+      "src/rust_bridge/SkRasterClip_rust.cpp",
+      "src/rust_bridge/SkRegion_path_rust.cpp",
+      "src/rust_bridge/SkRegion_rust.cpp",
     ]
   }
 

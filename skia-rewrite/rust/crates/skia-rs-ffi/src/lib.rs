@@ -10,3 +10,4 @@ pub mod geometry_curves;
 pub mod math;
 pub mod matrix_rrect;
 pub mod md5;
+pub mod region;
