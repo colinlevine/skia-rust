@@ -21,11 +21,22 @@ Overall Skia Rewrite:       [###-----------------] 206/1442 files   (14.3%) - Ph
 | **Phase 4** | GPU backends (Ganesh, then Graphite) | `0 / 544` | `37.7%` | Pending |
 | **Phase 5** | PDF, SVG, XML, and `modules/` | `0 / 267` | `18.5%` | Pending |
 
+## How It's Being Ported
+
+For the full step-by-step porting process, architecture rules, dependency graph, per-module checklist, performance A/B methodology, and post-phase cleanup workflow, see **[`PORTING.md`](PORTING.md)**.
+
+At a high level, every module follows the same loop:
+
+1. **Unchanged C++ API & untouched baseline:** `skia-baseline/` and `skia-rewrite/{include,gm,tests,dm,bench}` stay untouched so upstream Skia's own test suite and golden masters validate every change.
+2. **Safe Rust crates + thin FFI boundary:** Each Skia subsystem is rewritten in a `#![forbid(unsafe_code)]` Rust crate under `skia-rewrite/rust/crates/`, wired behind a thin C++/Rust FFI layer (`skia-rs-ffi` + `src/rust_bridge/`) and a per-module GN toggle (`skia_rust_<module>`).
+3. **Bit-exact verification on every commit:** Before landing on `main`, each module must pass all Rust unit tests, all `2644` Skia CPU unit tests, and a `1000/1000` bit-exact GM hash match against `skia-baseline/out/dm/dm.json` via [`tools/verify_dm/`](tools/verify_dm/).
+4. **End-of-phase performance A/B check & cleanup:** Once a phase reaches 100%, we tag `phase<N>-pre-cleanup`, remove that phase's replaced `.cpp` files and toggles so Rust is unconditional, verify a clean build, and log a baseline-vs-Rust performance comparison (runtime, compile time, binary size).
+
 ## Repository Layout
 
 - [`UPSTREAM.toml`](UPSTREAM.toml) — Exact pinned upstream Skia repository, branch, commit SHA, and commit date.
 - [`BASELINE.toml`](BASELINE.toml) — Exact GN build flags, `dm` flags, generation date, and machine specs used for the baseline verification.
-- [`PORTING.md`](PORTING.md) — Phase dependency graph, module porting order, and live verification status.
+- [`PORTING.md`](PORTING.md) — Step-by-step porting process, architecture ground rules, phase dependency graph, performance/cleanup workflow, and live module status.
 - [`rust-toolchain.toml`](rust-toolchain.toml) — Pinned Rust toolchain version (`1.100.0`).
 - [`tools/verify_dm/`](tools/verify_dm/) — Safe Rust verification harness comparing `skia-rewrite/out/Rust/dm` against `skia-baseline/out/dm/dm.json` and checking protected paths.
 - [`skia-baseline/`](skia-baseline/) — Untouched pinned upstream C++ Skia checkout (read-only forever). Build artifacts (`skia-baseline/out/Original/`) and reference hashes (`skia-baseline/out/dm/dm.json`) live here and are git-ignored.
