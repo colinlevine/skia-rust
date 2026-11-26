@@ -50,7 +50,11 @@ This document tracks the dependency graph, module porting order, architecture, a
    - **Merge & Verify:** Merge one module at a time into `main`, run `cargo run --release --manifest-path tools/verify_dm/Cargo.toml` (`--src gm tests --nogpu --config 8888`, comparing all `1000/1000` `dm.json` hashes against `skia-baseline/out/dm/dm.json` and checking protected paths), update **both `PORTING.md` and the `README.md` Progress section/bar** in the same commit, commit with `<module>: <what changed> (DM: X/Y match)`, push `main`, and delete the merged branch and worktree.
 5. **Post-Phase Cleanup**
    - While a phase is actively being ported, the original C++ `.cpp` files remain in `skia-rewrite/src/` so GN can compile unported neighbors incrementally and toggle individual modules between C++ and Rust for fast bisecting.
-   - Once a phase is 100% ported and passes full verification, run a dedicated cleanup commit removing **only** that phase's already-ported `.cpp` implementation files from `skia-rewrite/src/` (keeping all unported C++ code/directories in place until they are ported, keeping `skia-baseline/` untouched as the read-only reference, and keeping `skia-rewrite/{include,tests,gm,dm,bench}` intact).
+   - Once a phase is 100% ported and passes full verification:
+     1. Tag the current `main` as `phase<N>-pre-cleanup` (so the toggleable C++/Rust state remains permanently addressable if ever needed for bisecting).
+     2. In a dedicated cleanup commit, delete only that phase's ported `.cpp` implementation files from `skia-rewrite/src/`, remove their entries from `skia-rewrite/gn/*.gni`, and remove their `skia_rust_<module>` flags from `skia-rewrite/gn/skia_rust.gni` / `BUILD.gn` so Rust is unconditional for completed phases.
+     3. Keep any private headers (`src/**/*.h`) still included by unported C++ and keep all unported C++ code/directories in place until they are rewritten. `skia-baseline/` and `skia-rewrite/{include,tests,gm,dm,bench}` stay untouched.
+     4. Verify the cleanup commit with a full clean build and full `tools/verify_dm/` verification (`1000/1000` DM match + all CPU unit tests + protected paths). If the build fails to link, a deleted file still had unported code: restore it and port the remainder first.
 
 ---
 
@@ -159,7 +163,7 @@ Large modules (such as `skia-rs-geometry`, `skia-rs-path`, `skia-rs-raster`, `sk
 
 ## Upcoming Phases (High-Level Roadmap)
 
-- **Phase 2 — Image Codecs (`src/codec/`, `src/encode/`):** Replace libpng/libjpeg/libwebp/wuffs/dng glue with Rust crates (`png`, `zune-jpeg`, `image-webp`, `gif`, etc.) behind `SkCodec` / `SkEncoder`. Requires verifying baseline coverage for `--src image colorImage` before starting.
-- **Phase 3 — SkSL (`src/sksl/`, `SkRuntimeEffect`):** Safe Rust lexer, parser, IR, typechecker, optimizer, and RP/GLSL/WGSL/SPIR-V/Metal backends.
-- **Phase 4 — GPU Backends (Ganesh, then Graphite):** Requires establishing a GPU baseline (`gl`/`vk`) before starting.
-- **Phase 5 — PDF, SVG, XML & `modules/`:** `src/pdf/`, `src/svg/`, `src/xml/`, `modules/skunicode`, `modules/skshaper`, `modules/skparagraph`, `modules/skottie`, `modules/sksg`, `modules/bentleyottmann`, etc.
+- **Phase 2 — Image Codecs (`src/codec/`, `src/encode/`):** Replace libpng/libjpeg/libwebp/wuffs/dng glue with Rust crates (`png`, `zune-jpeg`, `image-webp`, `gif`, etc.) behind `SkCodec` / `SkEncoder`. Requires verifying baseline coverage for `--src image colorImage` before starting. Same post-phase cleanup process as Phase 1 (`phase2-pre-cleanup`).
+- **Phase 3 — SkSL (`src/sksl/`, `SkRuntimeEffect`):** Safe Rust lexer, parser, IR, typechecker, optimizer, and RP/GLSL/WGSL/SPIR-V/Metal backends. Same post-phase cleanup process as Phase 1 (`phase3-pre-cleanup`).
+- **Phase 4 — GPU Backends (Ganesh, then Graphite):** Requires establishing a GPU baseline (`gl`/`vk`) before starting. Same post-phase cleanup process as Phase 1 (`phase4-pre-cleanup`).
+- **Phase 5 — PDF, SVG, XML & `modules/`:** `src/pdf/`, `src/svg/`, `src/xml/`, `modules/skunicode`, `modules/skshaper`, `modules/skparagraph`, `modules/skottie`, `modules/sksg`, `modules/bentleyottmann`, etc. Same post-phase cleanup process as Phase 1 (`phase5-pre-cleanup`).
