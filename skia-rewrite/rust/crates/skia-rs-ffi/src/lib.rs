@@ -21,3 +21,4 @@ pub mod raster;
 pub mod region;
 pub mod scan;
 pub mod shaders;
+pub mod text;

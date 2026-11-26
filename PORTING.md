@@ -8,7 +8,7 @@ This document tracks the dependency graph, module porting order, architecture, a
 
 | Phase | Target | Baseline Coverage | Status |
 |---|---|---|---|
-| **Phase 1** | CPU raster backend (`config 8888`) | Covered: `skia-baseline/out/dm/dm.json` (`1000` `8888` GM MD5 hashes) + `2644` CPU unit tests via `dm --src gm tests --nogpu --config 8888` | **Layer 5 (16/19 modules done)** |
+| **Phase 1** | CPU raster backend (`config 8888`) | Covered: `skia-baseline/out/dm/dm.json` (`1000` `8888` GM MD5 hashes) + `2644` CPU unit tests via `dm --src gm tests --nogpu --config 8888` | **Layer 5 (17/19 modules done)** |
 | **Phase 2** | Image codecs (`src/codec/`, `src/encode/`) | Needs baseline check (`--src image colorImage` + codec unit tests) before starting | Pending |
 | **Phase 3** | SkSL shader compiler (`src/sksl/`) | Covered by CPU SkSL unit tests + GMs (`--src gm tests --nogpu --config 8888`) | Pending |
 | **Phase 4** | GPU backends (Ganesh, then Graphite) | **Not yet covered** (`skia_use_gl = false`; needs GPU baseline before starting) | Pending |
@@ -155,7 +155,7 @@ flowchart TD
 ### Layer 5 — Text, Picture Recording & Canvas (Fan Out: 2 Agents, then Converge)
 | # | Module / Crate | GN Flag | Key Skia Files Covered | Depends On | Parallel Group | Status |
 |---|---|---|---|---|---|---|
-| 5.1 | `skia-rs-text` | `skia_rust_text` | `SkFont`, `SkFontMetricsPriv`, `SkFontDescriptor`, `SkFontMgr`, `SkTypeface`, `SkTypefaceCache`, `SkGlyph`, `SkScalerContext`, `SkStrike`, `SkStrikeCache`, `SkStrikeSpec`, `SkTextBlob`, `GlyphRun`, `SkGlyphRunPainter`, `SkTextUtils` (font parsing via Rust crates such as `skrifa`/`read-fonts` where appropriate) | 1.2, 2.2, 2.4, 3.3 | Wave D (parallel w/ 4.4) | Planned |
+| 5.1 | `skia-rs-text` | `skia_rust_text` | `SkFont`, `SkFontMetricsPriv`, `SkFontDescriptor`, `SkFontMgr`, `SkTypeface`, `SkTypefaceCache`, `SkGlyph`, `SkScalerContext`, `SkStrike`, `SkStrikeCache`, `SkStrikeSpec`, `SkTextBlob`, `GlyphRun`, `SkGlyphRunPainter`, `SkTextUtils` (font parsing via Rust crates such as `skrifa`/`read-fonts` where appropriate) | 1.2, 2.2, 2.4, 3.3 | Wave D (parallel w/ 4.4) | **Done** (`DM: 1000/1000`) |
 | 5.2 | `skia-rs-picture` | `skia_rust_picture` | `SkRecord`, `SkRecords`, `SkRecordCanvas`, `SkRecordDraw`, `SkRecordOpts`, `SkPicture`, `SkPictureRecorder`, `SkPictureRecord`, `SkPicturePlayback`, `SkPictureData`, `SkPictureFlat`, `SkDrawable`, `SkRecordedDrawable`, `SkAnnotation`, `SkLatticeIter`, `SkMultiPictureDocument` | 2.2, 2.4, 4.1, 4.3, 4.4 | Wave E | Planned |
 | 5.3 | `skia-rs-canvas` | `skia_rust_canvas` | `SkDraw`, `SkDraw_atlas`, `SkDraw_text`, `SkDraw_vertices`, `SkDevice`, `SkBitmapDevice`, `SkClipStackDevice`, `SkCanvas`, `SkCanvas_Raster`, `SkCanvasPriv`, `SkOverdrawCanvas`, `SkNWayCanvas`, `SkNoDrawCanvas`, `SkNullCanvas`, `SkPaintFilterCanvas`, `SkCanvasStack`, `SkRecorder`, `RasterContext`, `src/cpu/Recorder` | 3.2, 3.3, 3.4, 4.4, 5.1, 5.2 | Final (Solo) | Planned |
 

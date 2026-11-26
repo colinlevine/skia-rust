@@ -16,6 +16,7 @@ members = [
     "crates/skia-rs-colorfilters",
     "crates/skia-rs-effects",
     "crates/skia-rs-imagefilters",
+    "crates/skia-rs-text",
     "crates/skia-rs-ffi",
 ]
 

@@ -23,3 +23,4 @@ skia-rs-shaders = { path = "../skia-rs-shaders" }
 skia-rs-colorfilters = { path = "../skia-rs-colorfilters" }
 skia-rs-effects = { path = "../skia-rs-effects" }
 skia-rs-imagefilters = { path = "../skia-rs-imagefilters" }
+skia-rs-text = { path = "../skia-rs-text" }

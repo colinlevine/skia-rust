@@ -2460,6 +2460,38 @@ skia_source_set("core") {
       "src/rust_bridge/SkPathEffectCore_rust.cpp",
     ]
   }
+
+  if (skia_rust_text) {
+    sources -= [
+      "//src/core/SkFont.cpp",
+      "//src/core/SkFontDescriptor.cpp",
+      "//src/core/SkFontMetricsPriv.cpp",
+      "//src/core/SkFontMgr.cpp",
+      "//src/core/SkFontStream.cpp",
+      "//src/core/SkFont_serial.cpp",
+      "//src/core/SkGlyph.cpp",
+      "//src/core/SkGlyphRunPainter.cpp",
+      "//src/core/SkScalerContext.cpp",
+      "//src/core/SkStrike.cpp",
+      "//src/core/SkStrikeCache.cpp",
+      "//src/core/SkStrikeRef.cpp",
+      "//src/core/SkStrikeSpec.cpp",
+      "//src/core/SkTextBlob.cpp",
+      "//src/core/SkTypeface.cpp",
+      "//src/core/SkTypefaceCache.cpp",
+      "//src/core/SkTypeface_remote.cpp",
+      "//src/text/GlyphRun.cpp",
+      "//src/text/SlugFromBuffer.cpp",
+      "//src/text/StrikeForGPU.cpp",
+    ]
+    sources += [
+      "src/rust_bridge/SkFont_rust.cpp",
+      "src/rust_bridge/SkGlyphScaler_rust.cpp",
+      "src/rust_bridge/SkStrike_rust.cpp",
+      "src/rust_bridge/SkTextBlobRun_rust.cpp",
+      "src/rust_bridge/SkTypeface_rust.cpp",
+    ]
+  }
 }
 
 skia_component("skia") {
@@ -2595,6 +2627,10 @@ skia_component("skia") {
       "src/rust_bridge/SkPathEffects_rust.cpp",
       "src/rust_bridge/SkShadows_rust.cpp",
     ]
+  }
+  if (skia_rust_text) {
+    sources -= [ "//src/utils/SkTextUtils.cpp" ]
+    sources += [ "src/rust_bridge/SkTextUtils_rust.cpp" ]
   }
   sources += skia_effects_imagefilter_sources
   if (skia_rust_imagefilters) {
