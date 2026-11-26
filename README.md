@@ -9,8 +9,8 @@ A safe Rust rewrite of Google's [Skia](https://skia.org/) 2D graphics library, v
 > Full dependency graph & module status: **[`PORTING.md`](PORTING.md)**
 
 ```text
-Phase 1 (CPU Raster 8888):  [██░░░░░░░░░░░░░░░░░░]  2/19   modules (10.5%) — Layer 0 done
-Overall Skia Rewrite:       [░░░░░░░░░░░░░░░░░░░░]  1/1442 files   ( 0.1%) — Phases completed: 0/5
+Phase 1 (CPU Raster 8888):  [##------------------]   2/19   modules (10.5%) - Layer 0 done
+Overall Skia Rewrite:       [--------------------]   1/1442 files   ( 0.1%) - Phases completed: 0/5
 ```
 
 | Phase | Scope | Files Ported | Share of Skia | Status |
