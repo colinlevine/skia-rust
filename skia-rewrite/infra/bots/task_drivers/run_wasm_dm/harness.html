@@ -1,0 +1,122 @@
+<!doctype html>
+<meta charset="utf-8" />
+
+<head>
+  <script type="module">
+    import createModule from "/dm.js";
+
+    // These routes are served by the go localhost http server.
+    const Routes = {
+      knownHashes: "/known-hashes.txt",
+      upload: "/upload?path="
+    };
+
+    // The wasm module instance, undefined until the "process" has started.
+    let Module;
+
+    async function dm(argv) {
+      const exit = Promise.withResolvers();
+
+      // A wasm trap (e.g. failed SkASSERT) on a pthread shows up as an uncaught error on the main
+      // thread, instead of going through the onExit/onAbort handlers.
+      window.addEventListener("error", (e) => {
+        exit.reject(new Error("uncaught: " + (e.error?.message ?? e.message)));
+      });
+
+      Module = await createModule({
+        noInitialRun: true,
+        arguments: argv,
+        print: (s) => console.log(s),
+        printErr: (s) => console.error(s),
+        onExit: exit.resolve,
+        onAbort: (msg) => exit.reject(new Error("abort: " + msg)),
+      });
+
+      argv = [
+        ...argv,
+        "--uninterestingHashesFile", await downloadToTmp(Routes.knownHashes),
+      ]
+
+      try {
+        Module.callMain(argv);
+      } catch (e) {
+        exit.reject(e);
+      }
+      return exit.promise;
+    }
+
+    async function downloadToTmp(url) {
+      const fs = Module.FS;
+      const r = await fetch(url);
+      if (!r.ok) {
+        throw new Error(`fetching ${url}: ${r.status} ${r.statusText}`);
+      }
+
+      const data = new Uint8Array(await r.arrayBuffer());
+      const dst = `/tmp/${crypto.randomUUID()}`;
+      fs.writeFile(dst, data);
+      return dst;
+    }
+
+    window.listDirectory = function (root) {
+      const fs = Module.FS;
+      const out = [];
+      const walk = function (acc) {
+        for (const n of fs.readdir([root, ...acc].join('/'))) {
+          if (n === '.' || n === '..') {
+            continue;
+          }
+          const next = [...acc, n];
+          const m = fs.lstat([root, ...next].join('/')).mode;
+          if (fs.isDir(m)) {
+            walk(next);
+          } else if (fs.isFile(m)) {
+            out.push([root, ...next].join('/'));
+          }
+        }
+      };
+      walk([]);
+      return out;
+    }
+
+    window.uploadFile = async function (path) {
+      try {
+        const fs = Module.FS;
+        const data = fs.readFile(path);
+        await fetch(Routes.upload + encodeURIComponent(path), { method: 'POST', body: data });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    window.getWebGLInfo = function () {
+      const gl = new OffscreenCanvas(1, 1).getContext("webgl2");
+      if (!gl) {
+        return { error: "could not create webgl2 context" };
+      }
+
+      const info = { version: gl.getParameter(gl.VERSION) };
+      const dbg = gl.getExtension("WEBGL_debug_renderer_info");
+      if (dbg) {
+        info.vendor = gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL);
+        info.renderer = gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL);
+      }
+
+      return info;
+    };
+
+    window.run = async function (argv = []) {
+      console.log("calling wasm dm with args: " + JSON.stringify(argv));
+      const status = await dm(argv);
+
+      console.log("dm finished; status: " + status);
+      return status;
+    }
+
+    console.log("Page is alive");
+  </script>
+</head>
+
+<body></body>
+
+</html>

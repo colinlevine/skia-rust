@@ -1,0 +1,45 @@
+# Per-module GN build toggles for the safe Rust Skia rewrite (skia-rs).
+# Original C++ and Rust implementations can be built side by side.
+
+declare_args() {
+  # Convenience umbrella toggle to enable all completed Phase 1 Rust modules.
+  skia_rust_phase1 = false
+}
+
+declare_args() {
+  # Layer 0 / 1 — Foundations & Math
+  skia_rust_md5 = skia_rust_phase1
+  skia_rust_math = skia_rust_phase1
+  skia_rust_geometry = skia_rust_phase1
+
+  # Layer 2 — Core Primitives & Data Structures
+  skia_rust_color = skia_rust_phase1
+  skia_rust_path = skia_rust_phase1
+  skia_rust_region = skia_rust_phase1
+  skia_rust_core_types = skia_rust_phase1
+
+  # Layer 3 — Rasterization Core, PathOps & Surfaces
+  skia_rust_pathops = skia_rust_phase1
+  skia_rust_scan = skia_rust_phase1
+  skia_rust_raster = skia_rust_phase1
+  skia_rust_image = skia_rust_phase1
+
+  # Layer 4 — Shaders, ColorFilters, Effects & ImageFilters
+  skia_rust_shaders = skia_rust_phase1
+  skia_rust_colorfilters = skia_rust_phase1
+  skia_rust_effects = skia_rust_phase1
+  skia_rust_imagefilters = skia_rust_phase1
+
+  # Layer 5 — Text, Picture & Canvas
+  skia_rust_text = skia_rust_phase1
+  skia_rust_picture = skia_rust_phase1
+  skia_rust_canvas = skia_rust_phase1
+}
+
+skia_use_rust_skia =
+    skia_rust_md5 || skia_rust_math || skia_rust_geometry ||
+    skia_rust_color || skia_rust_path || skia_rust_region ||
+    skia_rust_core_types || skia_rust_pathops || skia_rust_scan ||
+    skia_rust_raster || skia_rust_image || skia_rust_shaders ||
+    skia_rust_colorfilters || skia_rust_effects || skia_rust_imagefilters ||
+    skia_rust_text || skia_rust_picture || skia_rust_canvas

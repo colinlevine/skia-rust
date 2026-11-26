@@ -1,0 +1,11 @@
+[package]
+name = "skia-rs-ffi"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]
+skia-rs-math = { path = "../skia-rs-math" }

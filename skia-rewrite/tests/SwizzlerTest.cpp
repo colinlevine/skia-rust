@@ -1,0 +1,312 @@
+/*
+ * Copyright 2015 Google Inc.
+ *
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+#include "include/codec/SkCodec.h"
+#include "include/core/SkAlphaType.h"
+#include "include/core/SkColor.h"
+#include "include/core/SkColorType.h"
+#include "include/core/SkImageInfo.h"
+#include "include/core/SkSwizzle.h"
+#include "include/private/SkEncodedInfo.h"
+#include "src/codec/SkSampler.h"
+#include "src/codec/SkSwizzler.h"
+#include "src/core/SkSwizzlePriv.h"
+#include "tests/Test.h"
+
+#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <memory>
+
+static bool is_xr_color_type(SkColorType colorType) {
+    return colorType == kBGR_101010x_XR_SkColorType || colorType == kBGRA_10101010_XR_SkColorType;
+}
+
+static std::array<uint8_t, 8> expected_fill_pixel(SkColorType colorType) {
+    std::array<uint8_t, 8> pixelBytes = {};
+    if (colorType == kBGR_101010x_XR_SkColorType) {
+        constexpr uint32_t kExpected = 0x18060180u;
+        memcpy(pixelBytes.data(), &kExpected, sizeof(kExpected));
+    } else if (colorType == kBGRA_10101010_XR_SkColorType) {
+        constexpr uint64_t kExpected = 0x6000600060006000ULL;
+        memcpy(pixelBytes.data(), &kExpected, sizeof(kExpected));
+    }
+    return pixelBytes;
+}
+
+static void check_fill(skiatest::Reporter* r,
+                       const SkImageInfo& imageInfo,
+                       int startRow,
+                       int endRow,
+                       size_t rowBytes,
+                       size_t offset,
+                       SkCodec::ZeroInitialized zeroInit) {
+    // Calculate the total size of the image in bytes.  Use the smallest possible size.
+    // The offset value tells us to adjust the pointer from the memory we allocate in order
+    // to test on different memory alignments.  If offset is nonzero, we need to increase the
+    // size of the memory we allocate in order to make sure that we have enough.  We are
+    // still allocating the smallest possible size.
+    const size_t totalBytes = imageInfo.computeByteSize(rowBytes) + offset;
+
+    // Pre-fill 8-byte-aligned storage with a non-zero sentinel so we verify both that target
+    // rows are filled and that prefix bytes, surrounding rows, and row padding stay untouched.
+    constexpr uint8_t kSentinel = 0xA5;
+    auto storage = std::make_unique<uint64_t[]>((totalBytes + 7) / 8 + 1);
+    auto* rawStorage = reinterpret_cast<uint8_t*>(storage.get());
+    memset(rawStorage, kSentinel, totalBytes);
+
+    // Adjust the pointer in order to test on different memory alignments
+    uint8_t* imageData = rawStorage + offset;
+    uint8_t* imageStart = imageData + rowBytes * startRow;
+    const size_t rowPixelBytes = imageInfo.minRowBytes();
+    const bool isXR = is_xr_color_type(imageInfo.colorType());
+    if (zeroInit == SkCodec::kYes_ZeroInitialized && isXR) {
+        // Simulate caller-provided 0x00-initialized pixel rows for XR formats while keeping
+        // surrounding rows and padding set to kSentinel.
+        for (int y = startRow; y <= endRow; ++y) {
+            memset(imageData + y * rowBytes, 0, rowPixelBytes);
+        }
+    }
+    const SkImageInfo fillInfo = imageInfo.makeWH(imageInfo.width(), endRow - startRow + 1);
+    SkSampler::Fill(fillInfo, imageStart, rowBytes, zeroInit);
+
+    for (size_t i = 0; i < offset; ++i) {
+        REPORTER_ASSERT(r, rawStorage[i] == kSentinel);
+    }
+    const bool writesPixels = (zeroInit == SkCodec::kNo_ZeroInitialized) || isXR;
+    const size_t bpp = std::max<size_t>(1, imageInfo.bytesPerPixel());
+    const std::array<uint8_t, 8> expectedPixel = expected_fill_pixel(imageInfo.colorType());
+
+    const int height = imageInfo.height();
+    for (int y = 0; y < height; ++y) {
+        const uint8_t* rowPtr = imageData + y * rowBytes;
+        const size_t allocatedRowBytes = (y + 1 == height) ? rowPixelBytes : rowBytes;
+        const bool inFillRows = (y >= startRow && y <= endRow);
+        for (size_t byteIdx = 0; byteIdx < allocatedRowBytes; ++byteIdx) {
+            const uint8_t expected = (writesPixels && inFillRows && byteIdx < rowPixelBytes)
+                                             ? expectedPixel[byteIdx % bpp]
+                                             : kSentinel;
+            REPORTER_ASSERT(r, rowPtr[byteIdx] == expected);
+        }
+    }
+}
+
+static void check_fill_for_info(skiatest::Reporter* r, const SkImageInfo& info) {
+    const size_t bpp = info.bytesPerPixel();
+    // SkSampler::Fill casts row pointers to uint16_t*/uint32_t*/uint64_t*, so keep rowBytes
+    // and offset aligned to at least bpp (notably 8-byte aligned for 64-bit color types).
+    const size_t align = std::max<size_t>(4, bpp);
+
+    for (size_t padding : {size_t(0), align}) {
+        const size_t rowBytes = info.minRowBytes() + padding;
+        for (size_t offset = 0; offset <= padding; offset += align) {
+            for (int startRow = 0; startRow < info.height(); ++startRow) {
+                for (int endRow = startRow; endRow < info.height(); ++endRow) {
+                    for (SkCodec::ZeroInitialized zeroInit :
+                         {SkCodec::kNo_ZeroInitialized, SkCodec::kYes_ZeroInitialized}) {
+                        check_fill(r, info, startRow, endRow, rowBytes, offset, zeroInit);
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Test Fill() with different combinations of dimensions, alignment, and padding
+DEF_TEST(SwizzlerFill, r) {
+    constexpr int kWidths[] = {0, 10, 50};
+    constexpr int kHeights[] = {1, 5, 10};
+    constexpr SkColorType kColorTypes[] = {
+            kRGBA_8888_SkColorType,
+            kBGRA_8888_SkColorType,
+            kRGBA_1010102_SkColorType,
+            kBGR_101010x_XR_SkColorType,
+            kRGB_565_SkColorType,
+            kGray_8_SkColorType,
+            kAlpha_8_SkColorType,
+            kRGBA_F16_SkColorType,
+            kBGRA_10101010_XR_SkColorType,
+    };
+
+    for (int width : kWidths) {
+        for (int height : kHeights) {
+            for (SkColorType colorType : kColorTypes) {
+                check_fill_for_info(
+                        r, SkImageInfo::Make(width, height, colorType, kUnknown_SkAlphaType));
+            }
+        }
+    }
+
+#if !defined(SK_DEBUG)
+    // In release builds, unsupported color types fall back to a bytewise zero fill.
+    check_fill_for_info(r, SkImageInfo::Make(10, 5, kRGB_888x_SkColorType, kUnknown_SkAlphaType));
+#endif
+}
+
+DEF_TEST(SwizzlerPalette_BGR101010x_XR, r) {
+    // Entry 0 is 0x00000000 (extended-range -0.752941f per channel in 10-bit XR, not 0.0f);
+    // entry 1 is biased XR 0.0f (0x18060180u). With kYes_ZeroInitialized, SkSwizzler must still
+    // write 0x00000000 for entry 0 across 1, 2, 4, and 8-bit palettes rather than skipping it.
+    constexpr SkPMColor kColorTable[2] = {0x00000000u, 0x18060180u};
+    const SkImageInfo dstInfo =
+            SkImageInfo::Make(2, 1, kBGR_101010x_XR_SkColorType, kOpaque_SkAlphaType);
+    SkCodec::Options opts;
+    opts.fZeroInitialized = SkCodec::kYes_ZeroInitialized;
+
+    for (uint8_t bitsPerComponent : {1, 2, 4, 8}) {
+        const SkEncodedInfo encodedInfo = SkEncodedInfo::Make(2,
+                                                              1,
+                                                              SkEncodedInfo::kPalette_Color,
+                                                              SkEncodedInfo::kOpaque_Alpha,
+                                                              bitsPerComponent);
+        std::unique_ptr<SkSwizzler> swizzler =
+                SkSwizzler::Make(encodedInfo, kColorTable, dstInfo, opts);
+        REPORTER_ASSERT(r, swizzler);
+        if (!swizzler) {
+            continue;
+        }
+        const uint8_t firstByte = bitsPerComponent == 8
+                                          ? uint8_t(0)
+                                          : static_cast<uint8_t>(1u << (8 - 2 * bitsPerComponent));
+        const uint8_t srcBytes[2] = {firstByte, 1};
+        uint32_t dstPixels[2] = {0x18060180u, 0x00000000u};
+        swizzler->swizzle(dstPixels, srcBytes);
+        REPORTER_ASSERT(r, dstPixels[0] == 0x00000000u);
+        REPORTER_ASSERT(r, dstPixels[1] == 0x18060180u);
+    }
+}
+
+DEF_TEST(SwizzleOpts, r) {
+    uint32_t dst, src;
+
+    // forall c, c*255 == c, c*0 == 0
+    for (int c = 0; c <= 255; c++) {
+        src = (255<<24) | c;
+        SkOpts::RGBA_to_rgbA(&dst, &src, 1);
+        REPORTER_ASSERT(r, dst == src);
+        SkOpts::RGBA_to_bgrA(&dst, &src, 1);
+        REPORTER_ASSERT(r, dst == (uint32_t)((255<<24) | (c<<16)));
+
+        src = (0<<24) | c;
+        SkOpts::RGBA_to_rgbA(&dst, &src, 1);
+        REPORTER_ASSERT(r, dst == 0);
+        SkOpts::RGBA_to_bgrA(&dst, &src, 1);
+        REPORTER_ASSERT(r, dst == 0);
+    }
+
+    // check a totally arbitrary color
+    src = 0xFACEB004;
+    SkOpts::RGBA_to_rgbA(&dst, &src, 1);
+    REPORTER_ASSERT(r, dst == 0xFACAAD04);
+
+    // swap red and blue
+    SkOpts::RGBA_to_BGRA(&dst, &src, 1);
+    REPORTER_ASSERT(r, dst == 0xFA04B0CE);
+
+    // all together now
+    SkOpts::RGBA_to_bgrA(&dst, &src, 1);
+    REPORTER_ASSERT(r, dst == 0xFA04ADCA);
+}
+
+DEF_TEST(PublicSwizzleOpts, r) {
+    uint32_t dst, src;
+
+    // check a totally arbitrary color
+    src = 0xFACEB004;
+    SkSwapRB(&dst, &src, 1);
+    REPORTER_ASSERT(r, dst == 0xFA04B0CE);
+}
+
+using fn_reciprocal = float (*)(float);
+static void test_reciprocal_alpha(
+        skiatest::Reporter* reporter,
+        fn_reciprocal test255, fn_reciprocal test1) {
+    REPORTER_ASSERT(reporter, test255(0) == 0);
+    for (uint32_t i = 1; i < 256; ++i) {
+        const float r = test255(i);
+        const float e = (255.0f / i);
+        REPORTER_ASSERT(reporter, r == e);
+    }
+
+    REPORTER_ASSERT(reporter, test1(0) == 0);
+    for (uint32_t i = 1; i < 256; ++i) {
+        const float normalized = i / 255.0f;
+        const float r = test1(normalized);
+        const float e = (1.0f / normalized);
+        REPORTER_ASSERT(reporter, r == e);
+    }
+}
+
+#define SK_OPTS_NS test
+#define SK_OPTS_TARGET SK_OPTS_TARGET_DEFAULT
+#include "src/opts/SkOpts_SetTarget.h"
+#include "src/opts/SkSwizzler_opts.inc"
+DEF_TEST(ReciprocalAlphaOptimized, reporter) {
+    test_reciprocal_alpha(reporter,
+                          SK_OPTS_NS::reciprocal_alpha_times_255,
+                          SK_OPTS_NS::reciprocal_alpha);
+}
+
+DEF_TEST(ReciprocalAlphaPortable, reporter) {
+    test_reciprocal_alpha(reporter,
+                          SK_OPTS_NS::reciprocal_alpha_times_255_portable,
+                          SK_OPTS_NS::reciprocal_alpha_portable);
+}
+
+// The stages of RasterPipeline unpremul calcExpected needs to simulate.
+// SI void from_8888(U32 _8888, F* r, F* g, F* b, F* a) {
+//     *r = cast((_8888      ) & 0xff) * (1/255.0f);
+//     *g = cast((_8888 >>  8) & 0xff) * (1/255.0f);
+//     *b = cast((_8888 >> 16) & 0xff) * (1/255.0f);
+//     *a = cast((_8888 >> 24)       ) * (1/255.0f);
+// }
+// STAGE(unpremul, NoCtx) {
+//     float inf = sk_bit_cast<float>(0x7f800000);
+//     auto scale = if_then_else(1.0f/a < inf, 1.0f/a, 0.0f);
+//     r *= scale;
+//     g *= scale;
+//     b *= scale;
+// }
+// STAGE(store_8888, const SkRasterPipelineContexts::MemoryCtx* ctx) {
+//     auto ptr = ptr_at_xy<uint32_t>(ctx, dx,dy);
+//
+//     U32 px = to_unorm(r, 255)
+//            | to_unorm(g, 255) <<  8
+//            | to_unorm(b, 255) << 16
+//            | to_unorm(a, 255) << 24;
+//     store(ptr, px);
+// }
+uint32_t calcExpected(float alpha, float comp) {
+    if (alpha == 0) {
+        return 0;
+    }
+    const float normalized = comp * (1.0f / 255.0f);
+    const float normalizedA = alpha * (1.0f / 255.0f);
+    const float inverseAlpha = 1.0f / normalizedA;
+    const float unpremul = normalized * inverseAlpha;
+    const float scaledAndPinned = std::min(255.0f, unpremul * 255.0f);
+    return SK_OPTS_NS::pixel_round_as_RP(scaledAndPinned);
+}
+
+DEF_TEST(UnpremulSimulatingRP, reporter) {
+    for (uint32_t a = 0; a < 256; ++a) {
+        for (uint32_t c = 0; c < 256; ++c) {
+            const uint32_t expected = calcExpected(a, c);
+            const float normalizedA = a * (1.0f / 255.0f);
+            const float invA = SK_OPTS_NS::reciprocal_alpha(normalizedA);
+            const uint32_t actual = SK_OPTS_NS::unpremul_simulating_RP(invA, c);
+            if (actual != expected) {
+                SkDebugf("a: %u c: %u expected: %u actual: %u\n", a, c, expected, actual);
+            }
+            REPORTER_ASSERT(reporter, actual == expected);
+        }
+    }
+}
+
+#include "src/opts/SkOpts_RestoreTarget.h"

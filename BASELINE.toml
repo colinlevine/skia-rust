@@ -1,4 +1,4 @@
-# How the reference baseline in baseline/out/ was produced.
+# How the reference baseline in skia-baseline/out/ was produced.
 # Never regenerate unless deliberately moving to a new Skia version.
 
 [baseline]
