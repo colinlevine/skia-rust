@@ -4,6 +4,7 @@
 //! use `#![forbid(unsafe_code)]`.
 
 pub mod bitmap;
+pub mod canvas;
 pub mod color;
 pub mod colorfilters;
 pub mod core_types;

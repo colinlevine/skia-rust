@@ -2519,6 +2519,43 @@ skia_source_set("core") {
       "src/rust_bridge/SkRecord_rust.cpp",
     ]
   }
+
+  if (skia_rust_canvas) {
+    sources -= [
+      "//src/core/RasterContext.cpp",
+      "//src/core/SkAutoPixmapStorage.cpp",
+      "//src/core/SkBitmapDevice.cpp",
+      "//src/core/SkCanvas.cpp",
+      "//src/core/SkCanvasPriv.cpp",
+      "//src/core/SkCanvas_Raster.cpp",
+      "//src/core/SkCapabilities.cpp",
+      "//src/core/SkClipStackDevice.cpp",
+      "//src/core/SkContext.cpp",
+      "//src/core/SkDevice.cpp",
+      "//src/core/SkDocument.cpp",
+      "//src/core/SkDraw.cpp",
+      "//src/core/SkDraw_atlas.cpp",
+      "//src/core/SkDraw_text.cpp",
+      "//src/core/SkDraw_vertices.cpp",
+      "//src/core/SkGlobalInitialization_core.cpp",
+      "//src/core/SkGraphics.cpp",
+      "//src/core/SkMesh.cpp",
+      "//src/core/SkOverdrawCanvas.cpp",
+      "//src/core/SkPixelStorage.cpp",
+      "//src/core/SkReadPixelsRec.cpp",
+      "//src/core/SkRecorder.cpp",
+      "//src/core/SkWritePixelsRec.cpp",
+      "//src/cpu/Recorder.cpp",
+      "//src/image/SkTiledImageUtils.cpp",
+    ]
+    sources += [
+      "src/rust_bridge/SkCanvasHelpers_rust.cpp",
+      "src/rust_bridge/SkCanvas_rust.cpp",
+      "src/rust_bridge/SkCoreMisc_rust.cpp",
+      "src/rust_bridge/SkDevice_rust.cpp",
+      "src/rust_bridge/SkDraw_rust.cpp",
+    ]
+  }
 }
 
 skia_component("skia") {
@@ -2662,6 +2699,16 @@ skia_component("skia") {
   if (skia_rust_picture) {
     sources -= [ "//src/utils/SkMultiPictureDocument.cpp" ]
     sources += [ "src/rust_bridge/SkMultiPictureDocument_rust.cpp" ]
+  }
+  if (skia_rust_canvas) {
+    sources -= [
+      "//src/utils/SkCanvasStack.cpp",
+      "//src/utils/SkCanvasStateUtils.cpp",
+      "//src/utils/SkNWayCanvas.cpp",
+      "//src/utils/SkNullCanvas.cpp",
+      "//src/utils/SkPaintFilterCanvas.cpp",
+    ]
+    sources += [ "src/rust_bridge/SkCanvasUtils_rust.cpp" ]
   }
   sources += skia_effects_imagefilter_sources
   if (skia_rust_imagefilters) {
