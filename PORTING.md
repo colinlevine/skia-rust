@@ -50,7 +50,7 @@ This document tracks the dependency graph, module porting order, architecture, a
    - **Merge & Verify:** Merge one module at a time into `main`, run `cargo run --release --manifest-path tools/verify_dm/Cargo.toml` (`--src gm tests --nogpu --config 8888`, comparing all `1000/1000` `dm.json` hashes against `skia-baseline/out/dm/dm.json` and checking protected paths), update **both `PORTING.md` and the `README.md` Progress section/bar** in the same commit, commit with `<module>: <what changed> (DM: X/Y match)`, push `main`, and delete the merged branch and worktree.
 5. **Post-Phase Cleanup**
    - While a phase is actively being ported, the original C++ `.cpp` files remain in `skia-rewrite/src/` so GN can compile unported neighbors incrementally and toggle individual modules between C++ and Rust for fast bisecting.
-   - Once a phase is 100% ported and passes full verification, run a dedicated cleanup commit removing that phase's replaced `.cpp` implementation files from `skia-rewrite/src/` and pruning unused upstream Skia directories (such as `fuzz/`, `site/`, `docs/`, `demos.skia.org/`, `example/`, `experimental/`, `infra/`, `platform_tools/`, `relnotes/`, `specs/`, `bazel/`, `_agents/`, checking `BUILD.gn` references first; keeping `skia-baseline/` untouched as the read-only reference and keeping `skia-rewrite/{include,tests,gm,dm,bench}` intact).
+   - Once a phase is 100% ported and passes full verification, run a dedicated cleanup commit removing **only** that phase's already-ported `.cpp` implementation files from `skia-rewrite/src/` (keeping all unported C++ code/directories in place until they are ported, keeping `skia-baseline/` untouched as the read-only reference, and keeping `skia-rewrite/{include,tests,gm,dm,bench}` intact).
 
 ---
 
