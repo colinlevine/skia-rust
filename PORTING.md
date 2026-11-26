@@ -169,9 +169,86 @@ Large modules (such as `skia-rs-geometry`, `skia-rs-path`, `skia-rs-raster`, `sk
 
 ---
 
+## Phase 2: Image Codecs & Encoders (`src/codec/`, `src/encode/`) — Dependency Graph
+
+Phase 2 covers all **62** files in `src/codec/` (49) and `src/encode/` (13): **50** actively compiled in the baseline Linux build plus **12** disabled-by-default stubs/alternate backends (`3` `*_none.cpp`, `7` upstream Bazel-Rust wrappers, `2` disabled AVIF/JXL wrappers).
+
+```mermaid
+flowchart TD
+    P2_0["P2.0 Codec Baseline (--src image colorImage, 9,581 tasks) & GN Flags"]
+
+    %% Layer 1 (Parallel Fan-Out - 2 Agents)
+    P2_0 --> P2_CORE["P2.1 skia-rs-codec-core (13 files: SkCodec, Swizzler, Sampler, AndroidCodec, SkEncoder)"]
+    P2_0 --> P2_META["P2.2 skia-rs-codec-meta (10 files: Exif, Tiff, ColorProfile, Gainmap, HDR/AGTM, Xmp, SkICC)"]
+
+    %% Layer 2 (Parallel Waves - 2 Agents max per wave)
+    P2_CORE --> P2_BMP["P2.3 skia-rs-codec-bmp (7 files: BMP/Mask/RLE/Standard, WBMP, ICO)"]
+    P2_META --> P2_BMP
+
+    P2_CORE --> P2_PNG["P2.4 skia-rs-codec-png (5 files: PngCodecBase, ChunkReader, PngCodec, PngEncoder*)"]
+    P2_META --> P2_PNG
+
+    P2_CORE --> P2_JPG["P2.5 skia-rs-codec-jpeg (11 files: JpegCodec, SegmentScan, MPF, Xmp, Metadata, JpegEncoder, GainmapEncoder)"]
+    P2_META --> P2_JPG
+
+    P2_CORE --> P2_WEBP["P2.6 skia-rs-codec-webp (2 files: WebpCodec, WebpEncoderImpl)"]
+    P2_META --> P2_WEBP
+
+    P2_CORE --> P2_GIF["P2.7 skia-rs-codec-gif (1 file: WuffsCodec GIF/animation)"]
+    P2_META --> P2_GIF
+
+    P2_CORE --> P2_RAW["P2.8 skia-rs-codec-raw (1 file: RawCodec DNG/PIEX)"]
+    P2_META --> P2_RAW
+    P2_JPG --> P2_RAW
+
+    %% Convergence: Cleanup & Performance A/B
+    P2_BMP --> P2_DONE["Phase 2 Cleanup (phase2-pre-cleanup -> delete .cpp/toggles -> BENCHMARKS.md -> phase2-complete)"]
+    P2_PNG --> P2_DONE
+    P2_JPG --> P2_DONE
+    P2_WEBP --> P2_DONE
+    P2_GIF --> P2_DONE
+    P2_RAW --> P2_DONE
+```
+
+---
+
+## Phase 2: Proposed Module Porting Order & Status Tracker
+
+### Layer 0 — Baseline Verification & GN Scaffolding (Single Agent)
+| # | Module / Crate | GN Flag | Scope & Deliverables | Depends On | Parallel Group | Status |
+|---|---|---|---|---|---|---|
+| P2.0 | `codec-baseline` | `skia_rust_phase2` | Generate reference baseline hashes for `--src image colorImage --nogpu --config 8888 --images resources/images` (**9,581 tasks** across 181 images) from read-only `skia-baseline/out/Original/dm` (writing outside `skia-baseline/`); extend `tools/verify_dm/` with `--phase2` mode checking `1,000` GMs + `9,581` image tasks + all `2,644` CPU unit tests (`494` codec/encode tests across 70 test files); add Phase 2 per-module flags to `gn/skia_rust.gni` | Phase 1 | Solo | Planned |
+
+### Layer 1 — Codec Framework, Swizzlers & Metadata/HDR/ICC (Fan Out: 2 Agents)
+| # | Module / Crate | GN Flag | Key Skia Files Covered (23 files) | Depends On | Parallel Group | Status |
+|---|---|---|---|---|---|---|
+| P2.1 | `skia-rs-codec-core` | `skia_rust_codec_core` | **13 files (100% pure Rust):** `SkCodec`, `SkEncodedInfo`, `SkColorPalette`, `SkSampler`, `SkSwizzler`, `SkMaskSwizzler`, `SkPixmapUtils`, `SkCodecImageGenerator`, `SkImageGenerator_FromEncoded`, `SkAndroidCodec`, `SkAndroidCodecAdapter`, `SkSampledCodec`, `SkEncoder` | P2.0 | Wave A (2-way) | Planned |
+| P2.2 | `skia-rs-codec-meta` | `skia_rust_codec_meta` | **10 files (100% pure Rust):** `SkExif`, `SkTiffUtility`, `SkParseEncodedOrigin`, `SkCodecColorProfile`, `SkGainmapInfo`, `SkHdrMetadata`, `SkHdrAgtm`, `SkHdrAgtmParse`, `SkXmp`, `SkICC` | P2.0 | Wave A (2-way) | Planned |
+
+### Layer 2 — Format Decoders & Encoders (Fan Out: 2 Agents per Wave)
+| # | Module / Crate | GN Flag | Key Skia Files Covered (27 active + 3 `*_none` stubs) | Depends On | Parallel Group | Status |
+|---|---|---|---|---|---|---|
+| P2.3 | `skia-rs-codec-bmp` | `skia_rust_codec_bmp` | **7 files (100% pure Rust):** `SkBmpBaseCodec`, `SkBmpCodec`, `SkBmpMaskCodec`, `SkBmpRLECodec`, `SkBmpStandardCodec`, `SkWbmpCodec`, `SkIcoCodec` | P2.1, P2.2 | Wave B (2-way) | Planned |
+| P2.4 | `skia-rs-codec-png` | `skia_rust_codec_png` | **5 files (+ `SkPngEncoder_none`):** `SkPngCodecBase`, `SkPngCompositeChunkReader`, `SkPngCodec`, `SkPngEncoderBase`, `SkPngEncoderImpl` *(safe Rust PNG codec/encoder state machine & chunk/ICC/gainmap logic; thin `third_party/libpng` boundary for bit-exact parity)* | P2.1, P2.2 | Wave B (2-way) | Planned |
+| P2.5 | `skia-rs-codec-jpeg` | `skia_rust_codec_jpeg` | **11 files (+ `SkJpegEncoder_none`):** `SkJpegCodec`, `SkJpegDecoderMgr`, `SkJpegMetadataDecoderImpl`, `SkJpegMultiPicture`, `SkJpegSegmentScan`, `SkJpegSourceMgr`, `SkJpegUtility`, `SkJpegXmp`, `SkJPEGWriteUtility`, `SkJpegEncoderImpl`, `SkJpegGainmapEncoder` *(pure Rust segment scanner, MPF, XMP, metadata & gainmap logic; thin `third_party/libjpeg-turbo` IDCT/Huffman boundary for bit-exact parity)* | P2.1, P2.2 | Wave C (2-way) | Planned |
+| P2.6 | `skia-rs-codec-webp` | `skia_rust_codec_webp` | **2 files (+ `SkWebpEncoder_none`):** `SkWebpCodec`, `SkWebpEncoderImpl` *(safe Rust animation/frame/color/swizzle/encode state machine; thin `third_party/libwebp` boundary)* | P2.1, P2.2 | Wave C (2-way) | Planned |
+| P2.7 | `skia-rs-codec-gif` | `skia_rust_codec_gif` | **1 file:** `SkWuffsCodec` *(safe Rust GIF frame holder, disposal, incremental/scaled decode state machine; thin `third_party/wuffs` boundary)* | P2.1, P2.2 | Wave D (2-way) | Planned |
+| P2.8 | `skia-rs-codec-raw` | `skia_rust_codec_raw` | **1 file:** `SkRawCodec` *(safe Rust RAW/DNG orientation, dimension, color/swizzle & preview selection; thin `third_party/{dng_sdk,piex}` boundary)* | P2.1, P2.2, P2.5 | Wave D (2-way) | Planned |
+
+### Disabled-by-Default Files in `src/codec/` & `src/encode/` (12 of 62 files)
+- **3 `*_none.cpp` stubs** (`SkPngEncoder_none.cpp`, `SkJpegEncoder_none.cpp`, `SkWebpEncoder_none.cpp`): Covered alongside P2.4–P2.6 and cleaned up at Phase 2 end.
+- **7 upstream Bazel-Rust wrappers** (`SkBmpRustCodec.cpp`, `SkBmpRustDecoder.cpp`, `SkCodecColorProfileRust.cpp`, `SkPngRustCodec.cpp`, `SkPngRustDecoder.cpp`, `SkPngRustEncoder.cpp`, `SkPngRustEncoderImpl.cpp`): Disabled in baseline (`skia_use_rust_* = false`); **pruned during Phase 2 cleanup** once our unconditional safe Rust BMP/PNG/ICC codecs replace them (along with their superseded `gn/codec.gni` / `BUILD.gn` wiring).
+- **2 optional external-library wrappers** (`SkCrabbyAvifCodec.cpp` [`skia_use_crabbyavif = false`], `SkJpegxlCodec.cpp` [`skia_use_libjxl_decode = false`]): Not compiled in baseline; left untouched until AVIF/JXL baselines are established.
+
+### Phase 2 Architectural Notes
+- **Bit-exact parity & `third_party/` boundary:** Per project scope (*rewrite all of Skia except `third_party/`*), every Skia codec/encoder C++ file (`src/codec/`, `src/encode/`) is rewritten in `#![forbid(unsafe_code)]` Rust crates with zero external crates.io dependencies. Pure-Skia codecs (core framework, swizzlers, EXIF/TIFF/XMP/ICC/HDR/AGTM/gainmaps, BMP/WBMP/ICO, JPEG container/MPF/segment scanning) run 100% in safe Rust, while low-level bitstream engines in `third_party/` (`libpng`, `libjpeg-turbo`, `libwebp`, `wuffs`, `dng_sdk`, `piex`) remain behind thin FFI/bridge calls so all `1,000` GMs + `9,581` `image`/`colorImage` tasks + `494` codec unit tests stay **100% bit-exact** against `skia-baseline`.
+- **Verification, Benchmarks & Cleanup:** Every Phase 2 commit must pass `tools/verify_dm --phase2` (100% match on GMs + image decodes + CPU unit tests). Upon reaching `9/9` modules, follow Sections 5–6: tag `phase2-pre-cleanup`, delete Phase 2's ported `.cpp` files & toggles, pass a clean build + full verification, log Phase 2 results in `BENCHMARKS.md` via `tools/bench_ab` (plus image decode throughput), and tag `phase2-complete`.
+
+---
+
 ## Upcoming Phases (High-Level Roadmap)
 
-- **Phase 2 — Image Codecs (`src/codec/`, `src/encode/`, 62 files):** Replace libpng/libjpeg/libwebp/wuffs/dng glue with Rust crates (`png`, `zune-jpeg`, `image-webp`, `gif`, etc.) behind `SkCodec` / `SkEncoder`. Requires verifying baseline coverage for `--src image colorImage` before starting. Same performance A/B check & post-phase cleanup process as Phase 1 (Sections 5–6, `phase2-pre-cleanup`).
+- **Phase 2 — Image Codecs (`src/codec/`, `src/encode/`, 62 files):** Detailed plan above (9 modules across Layers 0–2; 50 actively compiled + 12 disabled-by-default). Verified against `--src image colorImage` (9,581 tasks) + `1,000` GMs + `2,644` CPU unit tests (`494` codec/encode tests). Same performance A/B check & post-phase cleanup process as Phase 1 (Sections 5–6, `phase2-pre-cleanup` / `phase2-complete`).
 - **Phase 3 — SkSL & `SkRuntimeEffect` (`src/sksl/`, `SkRuntime*`, 128 files):** Safe Rust lexer, parser, IR, typechecker, optimizer, RP/GLSL/WGSL/SPIR-V/Metal backends, plus `SkRuntimeEffect`, `SkRuntimeShader`, `SkRuntimeColorFilter`, `SkRuntimeImageFilter`, `SkRuntimeBlender`, `SkKnownRuntimeEffects`, and `SkSLTypeShared`. Same performance A/B check & post-phase cleanup process as Phase 1 (Sections 5–6, `phase3-pre-cleanup`).
 - **Phase 4 — GPU Backends (Ganesh, then Graphite; `src/gpu/`, `src/text/gpu/`, 559 files):** Requires establishing a GPU baseline (`gl`/`vk`) before starting. Includes GPU text atlas/SubRun/Slug infrastructure (`src/text/gpu/`). Same performance A/B check & post-phase cleanup process as Phase 1 (Sections 5–6, `phase4-pre-cleanup`).
 - **Phase 5 — PDF, SVG, XML, XPS & `modules/` (`src/{pdf,svg,xml,xps}/`, `modules/`, 248 files):** `src/pdf/`, `src/svg/`, `src/xml/`, `src/xps/`, `modules/skunicode`, `modules/skshaper`, `modules/skparagraph`, `modules/skottie`, `modules/sksg`, `modules/bentleyottmann`, etc. Same performance A/B check & post-phase cleanup process as Phase 1 (Sections 5–6, `phase5-pre-cleanup`).
