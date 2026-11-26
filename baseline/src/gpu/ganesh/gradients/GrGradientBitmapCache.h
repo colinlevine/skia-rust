@@ -1,0 +1,88 @@
+/*
+ * Copyright 2018 Google LLC
+ *
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+#ifndef GrGradientBitmapCache_DEFINED
+#define GrGradientBitmapCache_DEFINED
+
+#include "include/core/SkScalar.h"
+#include "include/effects/SkGradient.h"
+#include "include/private/SkDebug.h"
+#include "include/private/SkMutex.h"
+#include "include/private/SkNoncopyable.h"
+#include "include/private/SkOnlyStackAllocatable.h"
+#include "src/core/SkColorData.h"
+#include "src/partition_alloc/raw_ptr_exclusion.h"
+
+#include <cstddef>
+
+class SkBitmap;
+class SkColorSpace;
+enum SkAlphaType : int;
+enum SkColorType : int;
+
+class GrGradientBitmapCache : SkNoncopyable {
+public:
+    GrGradientBitmapCache(int maxEntries, int resolution);
+    ~GrGradientBitmapCache();
+
+    // Assumes colors are compatible with the specified alphaType (e.g. if it's premul then colors
+    // are already premultiplied). Thread safe.
+    void getGradient(const SkPMColor4f* colors,
+                     const SkScalar* positions,
+                     int count,
+                     bool colorsAreOpaque,
+                     const SkGradient::Interpolation& interpolation,
+                     const SkColorSpace* intermediateColorSpace,
+                     const SkColorSpace* dstColorSpace,
+                     SkColorType colorType,
+                     SkAlphaType alphaType,
+                     SkBitmap* bitmap);
+
+private:
+    SkMutex fMutex;
+
+    int fEntryCount;
+    const int fMaxEntries;
+    const int fResolution;
+
+    struct Entry;
+    // RAW_PTR_EXCLUSION: Performance: +2.8%, +2.4% on gradient_linear_clamp_hicolor respectively.
+    RAW_PTR_EXCLUSION mutable Entry* fHead;
+    RAW_PTR_EXCLUSION mutable Entry* fTail;
+
+    inline Entry* release(Entry*) const;
+    inline void attachToHead(Entry*) const;
+
+    bool find(const void* buffer, size_t len, SkBitmap*) const;
+    void add(const void* buffer, size_t len, const SkBitmap&);
+
+    void fillGradient(const SkPMColor4f* colors,
+                      const SkScalar* positions,
+                      int count,
+                      bool colorsAreOpaque,
+                      const SkGradient::Interpolation& interpolation,
+                      const SkColorSpace* intermediateColorSpace,
+                      const SkColorSpace* dstColorSpace,
+                      SkBitmap* bitmap);
+
+#ifdef SK_DEBUG
+    void validate() const;
+#else
+    void validate() const {}
+#endif
+
+    class AutoValidate : SkNoncopyable {
+    public:
+        SK_ONLY_STACK_ALLOCATABLE;
+
+        AutoValidate(const GrGradientBitmapCache* bc) : fBC(bc) { bc->validate(); }
+        ~AutoValidate() { fBC->validate(); }
+    private:
+        const GrGradientBitmapCache* fBC;
+    };
+};
+
+#endif

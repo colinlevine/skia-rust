@@ -1,0 +1,42 @@
+[
+  {
+    "cmd": [
+      "python3",
+      "[START_DIR]/cache/work/skia/bin/activate-emsdk"
+    ],
+    "cwd": "[START_DIR]/cache/work/skia",
+    "env": {
+      "CHROME_HEADLESS": "1",
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "infra_step": true,
+    "name": "activate-emsdk"
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cache/work/skia/modules/canvaskit/compile.sh",
+      "debug"
+    ],
+    "cwd": "[START_DIR]/cache/work/skia",
+    "env": {
+      "BUILD_DIR": "[START_DIR]/cache/work/skia/out/Build-Debian10-EMCC-wasm-Debug-CanvasKit/Debug",
+      "CHROME_HEADLESS": "1",
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "name": "Build CanvasKit"
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[skia::build]/resources/copy_build_products.py",
+      "[START_DIR]/cache/work/skia/out/Build-Debian10-EMCC-wasm-Debug-CanvasKit/Debug",
+      "[START_DIR]/[SWARM_OUT_DIR]/out/Debug",
+      "canvaskit.*"
+    ],
+    "infra_step": true,
+    "name": "copy build products"
+  },
+  {
+    "name": "$result"
+  }
+]
