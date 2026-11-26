@@ -8,7 +8,7 @@ This document tracks the dependency graph, module porting order, architecture, a
 
 | Phase | Target | Baseline Coverage | Status |
 |---|---|---|---|
-| **Phase 1** | CPU raster backend (`config 8888`) | Covered: `skia-baseline/out/dm/dm.json` (`1000` `8888` GM MD5 hashes) + `2644` CPU unit tests via `dm --src gm tests --nogpu --config 8888` | **Layer 2 (7/19 modules done)** |
+| **Phase 1** | CPU raster backend (`config 8888`) | Covered: `skia-baseline/out/dm/dm.json` (`1000` `8888` GM MD5 hashes) + `2644` CPU unit tests via `dm --src gm tests --nogpu --config 8888` | **Layer 2 done → Layer 3 (8/19 modules done)** |
 | **Phase 2** | Image codecs (`src/codec/`, `src/encode/`) | Needs baseline check (`--src image colorImage` + codec unit tests) before starting | Pending |
 | **Phase 3** | SkSL shader compiler (`src/sksl/`) | Covered by CPU SkSL unit tests + GMs (`--src gm tests --nogpu --config 8888`) | Pending |
 | **Phase 4** | GPU backends (Ganesh, then Graphite) | **Not yet covered** (`skia_use_gl = false`; needs GPU baseline before starting) | Pending |
@@ -126,7 +126,7 @@ flowchart TD
 | # | Module / Crate | GN Flag | Key Skia Files Covered | Depends On | Parallel Group | Status |
 |---|---|---|---|---|---|---|
 | 2.1 | `skia-rs-color` | `skia_rust_color` | `SkColor`, `SkColorSpace`, `SkColorSpaceXformSteps`, `SkColorTable`, `SkUnPreMultiply`, `SkImageInfo`, `SkBlendMode`, `SkBlendModeBlender`, `SkSwizzle`, `SkSwizzler_opts`, `SkConvertPixels`, `SkYUVMath`, `SkYUVAInfo`, `SkYUVAPixmaps`, `SkMasks` | 1.1, 1.2 | Wave A (4-way) | **Done** (`DM: 1000/1000`) |
-| 2.2 | `skia-rs-path` | `skia_rust_path` | `SkPath`, `SkPathBuilder`, `SkPathData`, `SkPathIter`, `SkPathRaw`, `SkPathRawShapes`, `SkPathPriv`, `SkPathMeasure`, `SkContourMeasure`, `SkPathUtils`, `SkPath_interpolate`, `SkPath_serial`, `SkStroke`, `SkStrokeRec`, `SkStrokerPriv`, `SkDashPath`, `SkParsePath` | 1.1, 1.2 | Wave A (4-way) | Planned |
+| 2.2 | `skia-rs-path` | `skia_rust_path` | `SkPath`, `SkPathBuilder`, `SkPathData`, `SkPathDump`, `SkPathIter`, `SkPathRaw`, `SkPathRawShapes`, `SkPathPriv`, `SkPathMeasure`, `SkContourMeasure`, `SkPathUtils`, `SkPath_interpolate`, `SkPath_serial`, `SkStroke`, `SkStrokeRec`, `SkStrokerPriv`, `SkDashPath`, `SkParsePath` | 1.1, 1.2 | Wave A (4-way) | **Done** (`DM: 1000/1000`) |
 | 2.3 | `skia-rs-region` | `skia_rust_region` | `SkRegion`, `SkRegion_path`, `SkAAClip`, `SkRasterClip`, `SkClipStack`, `SkClipStackUtils`, `SkRTree`, `SkBBHFactory` | 1.2 | Wave A (4-way) | **Done** (`DM: 1000/1000`) |
 | 2.4 | `skia-rs-core-types` | `skia_rust_core_types` | `SkData`, `SkDataTable`, `SkStream`, `SkBuffer`, `SkReadBuffer`, `SkWriteBuffer`, `SkWriter32`, `SkString`, `SkStringUtils`, `SkFlattenable`, `SkPaint`, `SkPaintPriv`, `SkDescriptor`, `SkMask`, `SkBlurMask`, `SkGaussFilter`, `SkMaskGamma`, `SkMaskCache` | 1.1 | Wave A (4-way) | **Done** (`DM: 1000/1000`) |
 

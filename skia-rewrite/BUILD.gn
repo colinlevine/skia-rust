@@ -2197,6 +2197,32 @@ skia_source_set("core") {
     ]
   }
 
+  if (skia_rust_path) {
+    sources -= [
+      "//src/core/SkContourMeasure.cpp",
+      "//src/core/SkPath.cpp",
+      "//src/core/SkPathBuilder.cpp",
+      "//src/core/SkPathData.cpp",
+      "//src/core/SkPathDump.cpp",
+      "//src/core/SkPathIter.cpp",
+      "//src/core/SkPathMeasure.cpp",
+      "//src/core/SkPathPriv.cpp",
+      "//src/core/SkPathRaw.cpp",
+      "//src/core/SkPathRawShapes.cpp",
+      "//src/core/SkPathUtils.cpp",
+      "//src/core/SkPath_interpolate.cpp",
+      "//src/core/SkPath_serial.cpp",
+      "//src/core/SkStroke.cpp",
+      "//src/core/SkStrokeRec.cpp",
+      "//src/core/SkStrokerPriv.cpp",
+    ]
+    sources += [
+      "src/rust_bridge/SkPathMeasure_rust.cpp",
+      "src/rust_bridge/SkPath_rust.cpp",
+      "src/rust_bridge/SkStroke_rust.cpp",
+    ]
+  }
+
   if (skia_rust_region) {
     sources -= [
       "//src/core/SkAAClip.cpp",
@@ -2318,6 +2344,13 @@ skia_component("skia") {
   if (skia_rust_geometry) {
     sources -= [ "//src/utils/SkMatrix22.cpp" ]
     sources += [ "src/rust_bridge/SkMatrix22_rust.cpp" ]
+  }
+  if (skia_rust_path) {
+    sources -= [
+      "//src/utils/SkDashPath.cpp",
+      "//src/utils/SkParsePath.cpp",
+    ]
+    sources += [ "src/rust_bridge/SkDashParsePath_rust.cpp" ]
   }
   sources += skia_utils_chromium
   sources += skia_effects_sources
