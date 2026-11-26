@@ -2429,6 +2429,19 @@ skia_source_set("core") {
       "src/rust_bridge/SkShaders_rust.cpp",
     ]
   }
+
+  if (skia_rust_imagefilters) {
+    sources -= [
+      "//src/core/SkImageFilter.cpp",
+      "//src/core/SkImageFilterCache.cpp",
+      "//src/core/SkImageFilterTypes.cpp",
+      "//src/core/SkLocalMatrixImageFilter.cpp",
+    ]
+    sources += [
+      "src/rust_bridge/SkImageFilterCore_rust.cpp",
+      "src/rust_bridge/SkImageFilterTypes_rust.cpp",
+    ]
+  }
 }
 
 skia_component("skia") {
@@ -2545,6 +2558,30 @@ skia_component("skia") {
     sources += [ "src/rust_bridge/SkGradients_rust.cpp" ]
   }
   sources += skia_effects_imagefilter_sources
+  if (skia_rust_imagefilters) {
+    sources -= [
+      "//src/effects/imagefilters/SkBlendImageFilter.cpp",
+      "//src/effects/imagefilters/SkBlurImageFilter.cpp",
+      "//src/effects/imagefilters/SkColorFilterImageFilter.cpp",
+      "//src/effects/imagefilters/SkComposeImageFilter.cpp",
+      "//src/effects/imagefilters/SkCropImageFilter.cpp",
+      "//src/effects/imagefilters/SkDisplacementMapImageFilter.cpp",
+      "//src/effects/imagefilters/SkDropShadowImageFilter.cpp",
+      "//src/effects/imagefilters/SkImageImageFilter.cpp",
+      "//src/effects/imagefilters/SkLightingImageFilter.cpp",
+      "//src/effects/imagefilters/SkMagnifierImageFilter.cpp",
+      "//src/effects/imagefilters/SkMatrixConvolutionImageFilter.cpp",
+      "//src/effects/imagefilters/SkMatrixTransformImageFilter.cpp",
+      "//src/effects/imagefilters/SkMergeImageFilter.cpp",
+      "//src/effects/imagefilters/SkMorphologyImageFilter.cpp",
+      "//src/effects/imagefilters/SkPictureImageFilter.cpp",
+      "//src/effects/imagefilters/SkShaderImageFilter.cpp",
+    ]
+    sources += [
+      "src/rust_bridge/SkImageFilterEffects_rust.cpp",
+      "src/rust_bridge/SkImageFilters_rust.cpp",
+    ]
+  }
   sources += skia_codec_shared
   sources += skia_codec_decode_bmp
   sources += skia_encode_srcs

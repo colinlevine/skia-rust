@@ -21,3 +21,4 @@ skia-rs-scan = { path = "../skia-rs-scan" }
 skia-rs-pathops = { path = "../skia-rs-pathops" }
 skia-rs-shaders = { path = "../skia-rs-shaders" }
 skia-rs-colorfilters = { path = "../skia-rs-colorfilters" }
+skia-rs-imagefilters = { path = "../skia-rs-imagefilters" }
