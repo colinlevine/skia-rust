@@ -8,11 +8,12 @@ This document tracks the dependency graph, module porting order, architecture, a
 
 | Phase | Target | Baseline Coverage | Status |
 |---|---|---|---|
-| **Phase 1** | CPU raster backend (`config 8888`) | Covered: `skia-baseline/out/dm/dm.json` (`1000` `8888` GM MD5 hashes) + `2644` CPU unit tests via `dm --src gm tests --nogpu --config 8888` | **19/19 modules ported (pre-cleanup)** |
-| **Phase 2** | Image codecs (`src/codec/`, `src/encode/`) | Needs baseline check (`--src image colorImage` + codec unit tests) before starting | Pending |
-| **Phase 3** | SkSL shader compiler (`src/sksl/`) | Covered by CPU SkSL unit tests + GMs (`--src gm tests --nogpu --config 8888`) | Pending |
-| **Phase 4** | GPU backends (Ganesh, then Graphite) | **Not yet covered** (`skia_use_gl = false`; needs GPU baseline before starting) | Pending |
-| **Phase 5** | PDF, SVG, XML, and `modules/` | Needs PDF/SVG/module baseline verification before starting | Pending |
+| **Phase 1** | CPU raster backend (`config 8888`) — 314 files | Covered: `skia-baseline/out/dm/dm.json` (`1000` `8888` GM MD5 hashes) + `2644` CPU unit tests via `dm --src gm tests --nogpu --config 8888` | **19/19 modules ported (cleanup & perf A/B in progress)** |
+| **Phase 2** | Image codecs (`src/codec/`, `src/encode/`) — 62 files | Needs baseline check (`--src image colorImage` + codec unit tests) before starting | Pending |
+| **Phase 3** | SkSL shader compiler & `SkRuntimeEffect` (`src/sksl/`, `SkRuntime*`) — 128 files | Covered by CPU SkSL unit tests + GMs (`--src gm tests --nogpu --config 8888`) | Pending |
+| **Phase 4** | GPU backends (Ganesh, then Graphite; `src/gpu/`, `src/text/gpu/`) — 559 files | **Not yet covered** (`skia_use_gl = false`; needs GPU baseline before starting) | Pending |
+| **Phase 5** | PDF, SVG, XML, XPS & `modules/` — 248 files | Needs PDF/SVG/module baseline verification before starting | Pending |
+| **Phase 6** | Core runtime, SIMD opts & platform ports (`src/ports/`, `src/opts/`, remaining `src/core/` runtime & `src/utils/`, `src/{android,capture,lazy,sfnt}/`) — 116 files | Covered by full DM + unit tests (and platform CI for Win/Mac/Android ports) | Pending |
 
 ### Reference Baseline Details (from `UPSTREAM.toml` & `BASELINE.toml`)
 - **Pinned Skia commit:** `67badb88843a848541ffb57fb0e7a3fc88c48051` (`main`, `2026-11-25`)
@@ -169,7 +170,8 @@ Large modules (such as `skia-rs-geometry`, `skia-rs-path`, `skia-rs-raster`, `sk
 
 ## Upcoming Phases (High-Level Roadmap)
 
-- **Phase 2 — Image Codecs (`src/codec/`, `src/encode/`):** Replace libpng/libjpeg/libwebp/wuffs/dng glue with Rust crates (`png`, `zune-jpeg`, `image-webp`, `gif`, etc.) behind `SkCodec` / `SkEncoder`. Requires verifying baseline coverage for `--src image colorImage` before starting. Same performance A/B check & post-phase cleanup process as Phase 1 (Sections 5–6, `phase2-pre-cleanup`).
-- **Phase 3 — SkSL (`src/sksl/`, `SkRuntimeEffect`):** Safe Rust lexer, parser, IR, typechecker, optimizer, and RP/GLSL/WGSL/SPIR-V/Metal backends. Same performance A/B check & post-phase cleanup process as Phase 1 (Sections 5–6, `phase3-pre-cleanup`).
-- **Phase 4 — GPU Backends (Ganesh, then Graphite):** Requires establishing a GPU baseline (`gl`/`vk`) before starting. Same performance A/B check & post-phase cleanup process as Phase 1 (Sections 5–6, `phase4-pre-cleanup`).
-- **Phase 5 — PDF, SVG, XML & `modules/`:** `src/pdf/`, `src/svg/`, `src/xml/`, `modules/skunicode`, `modules/skshaper`, `modules/skparagraph`, `modules/skottie`, `modules/sksg`, `modules/bentleyottmann`, etc. Same performance A/B check & post-phase cleanup process as Phase 1 (Sections 5–6, `phase5-pre-cleanup`).
+- **Phase 2 — Image Codecs (`src/codec/`, `src/encode/`, 62 files):** Replace libpng/libjpeg/libwebp/wuffs/dng glue with Rust crates (`png`, `zune-jpeg`, `image-webp`, `gif`, etc.) behind `SkCodec` / `SkEncoder`. Requires verifying baseline coverage for `--src image colorImage` before starting. Same performance A/B check & post-phase cleanup process as Phase 1 (Sections 5–6, `phase2-pre-cleanup`).
+- **Phase 3 — SkSL & `SkRuntimeEffect` (`src/sksl/`, `SkRuntime*`, 128 files):** Safe Rust lexer, parser, IR, typechecker, optimizer, RP/GLSL/WGSL/SPIR-V/Metal backends, plus `SkRuntimeEffect`, `SkRuntimeShader`, `SkRuntimeColorFilter`, `SkRuntimeImageFilter`, `SkRuntimeBlender`, `SkKnownRuntimeEffects`, and `SkSLTypeShared`. Same performance A/B check & post-phase cleanup process as Phase 1 (Sections 5–6, `phase3-pre-cleanup`).
+- **Phase 4 — GPU Backends (Ganesh, then Graphite; `src/gpu/`, `src/text/gpu/`, 559 files):** Requires establishing a GPU baseline (`gl`/`vk`) before starting. Includes GPU text atlas/SubRun/Slug infrastructure (`src/text/gpu/`). Same performance A/B check & post-phase cleanup process as Phase 1 (Sections 5–6, `phase4-pre-cleanup`).
+- **Phase 5 — PDF, SVG, XML, XPS & `modules/` (`src/{pdf,svg,xml,xps}/`, `modules/`, 248 files):** `src/pdf/`, `src/svg/`, `src/xml/`, `src/xps/`, `modules/skunicode`, `modules/skshaper`, `modules/skparagraph`, `modules/skottie`, `modules/sksg`, `modules/bentleyottmann`, etc. Same performance A/B check & post-phase cleanup process as Phase 1 (Sections 5–6, `phase5-pre-cleanup`).
+- **Phase 6 — Core Runtime, SIMD Opts & Platform Ports (`src/ports/`, `src/opts/`, remaining `src/core/` runtime & `src/utils/`, `src/{android,capture,lazy,sfnt}/`, 116 files):** Low-level C++ allocators/sync/threading (`SkArenaAlloc`, `SkMalloc`, `SkSpinlock`, `SkSemaphore`, `SkSharedMutex`, `SkExecutor`, `SkResourceCache`, `SkTDArray`), arch-specific SIMD dispatch targets (`*_opts_*`), remaining misc utilities (`SkCamera`, `SkParse*`, `SkJSONWriter`, `SkPatchUtils`, `SkPolyUtils`), and OS/font platform ports (`src/ports/`, Win/Mac/Android). Scheduled last so C++ runtime primitives collapse cleanly into Rust `std` / native crates once Phases 2–5 no longer call them from C++. Same performance A/B check & post-phase cleanup process (Sections 5–6, `phase6-pre-cleanup`).

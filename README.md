@@ -9,17 +9,18 @@ A safe Rust rewrite of Google's [Skia](https://skia.org/) 2D graphics library, v
 > Full dependency graph & module status: **[`PORTING.md`](PORTING.md)**
 
 ```text
-Phase 1 (CPU Raster 8888):  [####################]  19/19   modules (100.0%) - Ported (cleanup & A/B next)
-Overall Skia Rewrite:       [####----------------] 314/1442 files   (21.8%) - Phases completed: 0/5
+Phase 1 (CPU Raster 8888):  [####################]  19/19   modules (100.0%) - Ported (cleanup & A/B in progress)
+Overall Skia Rewrite:       [####----------------] 314/1427 files   (22.0%) - Phases completed: 0/6
 ```
 
 | Phase | Scope | Files Ported | Share of Skia | Status |
 |---|---|---|---|---|
-| **Phase 1** | CPU raster backend (`config 8888`) | `314 / 448` (`19/19` modules) | `31.1%` | All 19/19 modules ported (`DM: 1000/1000`); running cleanup & perf A/B |
+| **Phase 1** | CPU raster backend (`config 8888`) | `314 / 314` (`19/19` modules) | `22.0%` | All 19/19 modules ported (`DM: 1000/1000`); running cleanup & perf A/B |
 | **Phase 2** | Image codecs (`src/codec/`, `src/encode/`) | `0 / 62` | `4.3%` | Pending |
-| **Phase 3** | SkSL shader compiler (`src/sksl/`) | `0 / 121` | `8.4%` | Pending |
-| **Phase 4** | GPU backends (Ganesh, then Graphite) | `0 / 544` | `37.7%` | Pending |
-| **Phase 5** | PDF, SVG, XML, and `modules/` | `0 / 267` | `18.5%` | Pending |
+| **Phase 3** | SkSL shader compiler & `SkRuntimeEffect` (`src/sksl/`, `SkRuntime*`) | `0 / 128` | `9.0%` | Pending |
+| **Phase 4** | GPU backends (Ganesh, then Graphite; `src/gpu/`, `src/text/gpu/`) | `0 / 559` | `39.2%` | Pending |
+| **Phase 5** | PDF, SVG, XML, XPS & `modules/` | `0 / 248` | `17.4%` | Pending |
+| **Phase 6** | Core runtime, SIMD opts & platform ports (`src/ports/`, `src/opts/`, remaining `src/core/` & `src/utils/`, `src/{android,capture,lazy,sfnt}/`) | `0 / 116` | `8.1%` | Pending |
 
 ## How It's Being Ported
 
@@ -62,7 +63,7 @@ From `skia-rewrite/`:
 
 ```bash
 cd skia-rewrite
-./bin/gn gen out/Rust --args='is_debug=false skia_use_fontconfig=false skia_use_system_freetype2=false skia_use_gl=false skia_rust_md5=true'
+./bin/gn gen out/Rust --args='is_debug=false skia_use_fontconfig=false skia_use_system_freetype2=false skia_use_gl=false'
 ./third_party/ninja/ninja -C out/Rust dm
 cd ..
 cargo run --release --manifest-path tools/verify_dm/Cargo.toml
