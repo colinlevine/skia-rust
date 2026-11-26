@@ -14,3 +14,4 @@ skia-rs-color = { path = "../skia-rs-color" }
 skia-rs-path = { path = "../skia-rs-path" }
 skia-rs-region = { path = "../skia-rs-region" }
 skia-rs-core-types = { path = "../skia-rs-core-types" }
+skia-rs-raster = { path = "../skia-rs-raster" }

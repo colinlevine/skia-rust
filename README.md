@@ -4,18 +4,18 @@ A safe Rust rewrite of Google's [Skia](https://skia.org/) 2D graphics library, v
 
 ## Progress
 
-> **Current Step:** **Phase 1 — Layer 2 Done → Layer 3 (Rasterization, PathOps & Surfaces)** — Completed `skia-rs-path` (18 files: `SkPath`, `SkPathBuilder`, `SkPathData`, `SkPathDump`, `SkPathIter`, `SkPathRaw`, `SkPathRawShapes`, `SkPathPriv`, `SkPath_interpolate`, `SkPath_serial`, `SkContourMeasure`, `SkPathMeasure`, `SkStroke`, `SkStrokeRec`, `SkStrokerPriv`, `SkPathUtils`, `SkDashPath`, `SkParsePath`; `DM: 1000/1000 match`, `2644/2644` CPU unit tests); Layer 3 (`skia-rs-bitmap`, `skia-rs-raster`, `skia-rs-scan`, `skia-rs-pathops`) in flight.
+> **Current Step:** **Phase 1 — Layer 3 (Rasterization Core, PathOps & Surfaces)** — Completed `skia-rs-raster` (12 files: `SkBlitMask_opts`, `SkBlitRow_D32`, `SkBlitRow_opts`, `SkMemset_opts`, `SkOpts`, `SkBlitter`, `SkBlitter_A8`, `SkBlitter_ARGB32`, `SkBlitter_Sprite`, `SkSpriteBlitter_ARGB32`, `SkRasterPipeline`, `SkRasterPipelineBlitter`; `DM: 1000/1000 match`, `2644/2644` CPU unit tests); `skia-rs-bitmap`, `skia-rs-scan`, and `skia-rs-pathops` in flight.
 >
 > Full dependency graph & module status: **[`PORTING.md`](PORTING.md)**
 
 ```text
-Phase 1 (CPU Raster 8888):  [########------------]   8/19   modules (42.1%) - Layer 2 done, Layer 3 in progress
-Overall Skia Rewrite:       [#-------------------]  89/1442 files   ( 6.2%) - Phases completed: 0/5
+Phase 1 (CPU Raster 8888):  [#########-----------]   9/19   modules (47.4%) - Layer 3 in progress
+Overall Skia Rewrite:       [#-------------------] 101/1442 files   ( 7.0%) - Phases completed: 0/5
 ```
 
 | Phase | Scope | Files Ported | Share of Skia | Status |
 |---|---|---|---|---|
-| **Phase 1** | CPU raster backend (`config 8888`) | `89 / 448` (`8/19` modules) | `31.1%` | In progress (Layers 0–2 done; Layer 3 in flight) |
+| **Phase 1** | CPU raster backend (`config 8888`) | `101 / 448` (`9/19` modules) | `31.1%` | In progress (Layers 0–2 + `raster` done; `bitmap`/`scan`/`pathops` in flight) |
 | **Phase 2** | Image codecs (`src/codec/`, `src/encode/`) | `0 / 62` | `4.3%` | Pending |
 | **Phase 3** | SkSL shader compiler (`src/sksl/`) | `0 / 121` | `8.4%` | Pending |
 | **Phase 4** | GPU backends (Ganesh, then Graphite) | `0 / 544` | `37.7%` | Pending |

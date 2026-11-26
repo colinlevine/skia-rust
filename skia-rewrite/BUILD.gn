@@ -2271,6 +2271,28 @@ skia_source_set("core") {
       "src/rust_bridge/SkMaskBlur_rust.cpp",
     ]
   }
+
+  if (skia_rust_raster) {
+    sources -= [
+      "//src/core/SkBlitMask_opts.cpp",
+      "//src/core/SkBlitRow_D32.cpp",
+      "//src/core/SkBlitRow_opts.cpp",
+      "//src/core/SkBlitter.cpp",
+      "//src/core/SkBlitter_A8.cpp",
+      "//src/core/SkBlitter_ARGB32.cpp",
+      "//src/core/SkBlitter_Sprite.cpp",
+      "//src/core/SkMemset_opts.cpp",
+      "//src/core/SkOpts.cpp",
+      "//src/core/SkRasterPipeline.cpp",
+      "//src/core/SkRasterPipelineBlitter.cpp",
+      "//src/core/SkSpriteBlitter_ARGB32.cpp",
+    ]
+    sources += [
+      "src/rust_bridge/SkBlitOpts_rust.cpp",
+      "src/rust_bridge/SkBlitter_rust.cpp",
+      "src/rust_bridge/SkRasterPipeline_rust.cpp",
+    ]
+  }
 }
 
 skia_component("skia") {
