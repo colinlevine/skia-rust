@@ -2492,6 +2492,33 @@ skia_source_set("core") {
       "src/rust_bridge/SkTypeface_rust.cpp",
     ]
   }
+
+  if (skia_rust_picture) {
+    sources -= [
+      "//src/core/SkAnnotation.cpp",
+      "//src/core/SkDrawable.cpp",
+      "//src/core/SkLatticeIter.cpp",
+      "//src/core/SkPicture.cpp",
+      "//src/core/SkPictureData.cpp",
+      "//src/core/SkPictureFlat.cpp",
+      "//src/core/SkPicturePlayback.cpp",
+      "//src/core/SkPictureRecord.cpp",
+      "//src/core/SkPictureRecorder.cpp",
+      "//src/core/SkPtrRecorder.cpp",
+      "//src/core/SkRecord.cpp",
+      "//src/core/SkRecordCanvas.cpp",
+      "//src/core/SkRecordDraw.cpp",
+      "//src/core/SkRecordOpts.cpp",
+      "//src/core/SkRecordedDrawable.cpp",
+      "//src/core/SkRecords.cpp",
+      "//src/image/SkPictureImageGenerator.cpp",
+    ]
+    sources += [
+      "src/rust_bridge/SkDrawableLattice_rust.cpp",
+      "src/rust_bridge/SkPicture_rust.cpp",
+      "src/rust_bridge/SkRecord_rust.cpp",
+    ]
+  }
 }
 
 skia_component("skia") {
@@ -2631,6 +2658,10 @@ skia_component("skia") {
   if (skia_rust_text) {
     sources -= [ "//src/utils/SkTextUtils.cpp" ]
     sources += [ "src/rust_bridge/SkTextUtils_rust.cpp" ]
+  }
+  if (skia_rust_picture) {
+    sources -= [ "//src/utils/SkMultiPictureDocument.cpp" ]
+    sources += [ "src/rust_bridge/SkMultiPictureDocument_rust.cpp" ]
   }
   sources += skia_effects_imagefilter_sources
   if (skia_rust_imagefilters) {

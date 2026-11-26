@@ -4,18 +4,18 @@ A safe Rust rewrite of Google's [Skia](https://skia.org/) 2D graphics library, v
 
 ## Progress
 
-> **Current Step:** **Phase 1 — Layer 5 (Final 2 Modules: Picture & Canvas)** — Completed `skia-rs-text` (Layer 5.1, 21 files: `SkFont*`, `SkTypeface*`, `SkGlyph*`, `SkScalerContext`, `SkStrike*`, `SkTextBlob`, `GlyphRun`, `SkTextUtils`; `DM: 1000/1000 match`, `2644/2644` CPU unit tests). Only `skia-rs-picture` and `skia-rs-canvas` remain (both in flight)!
+> **Current Step:** **Phase 1 — Layer 5 (Final Module: `skia-rs-canvas`)** — Completed `skia-rs-picture` (Layer 5.2, 18 files: `SkRecord*`, `SkPicture*`, `SkPtrRecorder`, `SkDrawable`, `SkRecordedDrawable`, `SkAnnotation`, `SkLatticeIter`, `SkPictureImageGenerator`, `SkMultiPictureDocument`; `DM: 1000/1000 match`, `2644/2644` CPU unit tests). Only `skia-rs-canvas` remains (in flight)!
 >
 > Full dependency graph & module status: **[`PORTING.md`](PORTING.md)**
 
 ```text
-Phase 1 (CPU Raster 8888):  [##################--]  17/19   modules (89.5%) - Final 2 modules in flight
-Overall Skia Rewrite:       [####----------------] 266/1442 files   (18.4%) - Phases completed: 0/5
+Phase 1 (CPU Raster 8888):  [###################-]  18/19   modules (94.7%) - Final module in flight
+Overall Skia Rewrite:       [####----------------] 284/1442 files   (19.7%) - Phases completed: 0/5
 ```
 
 | Phase | Scope | Files Ported | Share of Skia | Status |
 |---|---|---|---|---|
-| **Phase 1** | CPU raster backend (`config 8888`) | `266 / 448` (`17/19` modules) | `31.1%` | In progress (Layers 0–4 + `text` done; final 2: `picture`/`canvas` in flight) |
+| **Phase 1** | CPU raster backend (`config 8888`) | `284 / 448` (`18/19` modules) | `31.1%` | In progress (18/19 done; final module `canvas` in flight) |
 | **Phase 2** | Image codecs (`src/codec/`, `src/encode/`) | `0 / 62` | `4.3%` | Pending |
 | **Phase 3** | SkSL shader compiler (`src/sksl/`) | `0 / 121` | `8.4%` | Pending |
 | **Phase 4** | GPU backends (Ganesh, then Graphite) | `0 / 544` | `37.7%` | Pending |
