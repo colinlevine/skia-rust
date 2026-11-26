@@ -2336,6 +2336,29 @@ skia_source_set("core") {
       "src/rust_bridge/SkSurface_rust.cpp",
     ]
   }
+
+  if (skia_rust_scan) {
+    sources -= [
+      "//src/core/SkAlphaRuns.cpp",
+      "//src/core/SkAnalyticEdge.cpp",
+      "//src/core/SkDistanceFieldGen.cpp",
+      "//src/core/SkEdge.cpp",
+      "//src/core/SkEdgeBuilder.cpp",
+      "//src/core/SkScan.cpp",
+      "//src/core/SkScan_AAAPath.cpp",
+      "//src/core/SkScan_AntiPath.cpp",
+      "//src/core/SkScan_Antihair.cpp",
+      "//src/core/SkScan_Hairline.cpp",
+      "//src/core/SkScan_Path.cpp",
+    ]
+    sources += [
+      "src/rust_bridge/SkDistanceFieldGen_rust.cpp",
+      "src/rust_bridge/SkEdge_rust.cpp",
+      "src/rust_bridge/SkScan_AntiPath_rust.cpp",
+      "src/rust_bridge/SkScan_Hairline_rust.cpp",
+      "src/rust_bridge/SkScan_rust.cpp",
+    ]
+  }
 }
 
 skia_component("skia") {

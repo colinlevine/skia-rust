@@ -15,3 +15,4 @@ pub mod md5;
 pub mod path;
 pub mod raster;
 pub mod region;
+pub mod scan;

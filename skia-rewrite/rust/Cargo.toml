@@ -10,6 +10,7 @@ members = [
     "crates/skia-rs-raster",
     "crates/skia-rs-bitmap",
     "crates/skia-rs-image",
+    "crates/skia-rs-scan",
     "crates/skia-rs-ffi",
 ]
 
