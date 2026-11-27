@@ -1,0 +1,10 @@
+[package]
+name = "skia-rs-codec-meta"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+skia-rs-math = { path = "../skia-rs-math" }
+skia-rs-geometry = { path = "../skia-rs-geometry" }
+skia-rs-color = { path = "../skia-rs-color" }

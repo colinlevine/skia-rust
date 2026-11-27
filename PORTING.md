@@ -223,7 +223,7 @@ flowchart TD
 | # | Module / Crate | GN Flag | Key Skia Files Covered (23 files) | Depends On | Parallel Group | Status |
 |---|---|---|---|---|---|---|
 | P2.1 | `skia-rs-codec-core` | `skia_rust_codec_core` | **13 files (100% pure Rust):** `SkCodec`, `SkEncodedInfo`, `SkColorPalette`, `SkSampler`, `SkSwizzler`, `SkMaskSwizzler`, `SkPixmapUtils`, `SkCodecImageGenerator`, `SkImageGenerator_FromEncoded`, `SkAndroidCodec`, `SkAndroidCodecAdapter`, `SkSampledCodec`, `SkEncoder` | P2.0 | Wave A (2-way) | **Done** (`DM: 1000/1000`, `Phase 2: 7032/7032`) |
-| P2.2 | `skia-rs-codec-meta` | `skia_rust_codec_meta` | **10 files (100% pure Rust):** `SkExif`, `SkTiffUtility`, `SkParseEncodedOrigin`, `SkCodecColorProfile`, `SkGainmapInfo`, `SkHdrMetadata`, `SkHdrAgtm`, `SkHdrAgtmParse`, `SkXmp`, `SkICC` | P2.0 | Wave A (2-way) | Planned |
+| P2.2 | `skia-rs-codec-meta` | `skia_rust_codec_meta` | **10 files (100% pure Rust):** `SkExif`, `SkTiffUtility`, `SkParseEncodedOrigin`, `SkCodecColorProfile`, `SkGainmapInfo`, `SkHdrMetadata`, `SkHdrAgtm`, `SkHdrAgtmParse`, `SkXmp`, `SkICC` | P2.0 | Wave A (2-way) | **Done** (`DM: 1000/1000`, `Phase 2: 7032/7032`) |
 
 ### Layer 2 — Format Decoders & Encoders (Fan Out: 2 Agents per Wave)
 | # | Module / Crate | GN Flag | Key Skia Files Covered (27 active + 3 `*_none` stubs) | Depends On | Parallel Group | Status |

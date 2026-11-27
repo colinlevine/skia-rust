@@ -27,3 +27,4 @@ skia-rs-text = { path = "../skia-rs-text" }
 skia-rs-picture = { path = "../skia-rs-picture" }
 skia-rs-canvas = { path = "../skia-rs-canvas" }
 skia-rs-codec-core = { path = "../skia-rs-codec-core" }
+skia-rs-codec-meta = { path = "../skia-rs-codec-meta" }

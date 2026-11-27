@@ -2021,7 +2021,11 @@ optional("xml") {
     "//third_party/expat",
   ]
   sources = skia_xml_sources
-  sources += skia_codec_xmp
+  if (skia_rust_codec_meta) {
+    sources += [ "src/rust_bridge/SkXmp_rust.cpp" ]
+  } else {
+    sources += skia_codec_xmp
+  }
   sources += skia_svg_writer_sources
   sources += skia_svg_writer_public
 
@@ -2311,6 +2315,25 @@ skia_component("skia") {
       "src/rust_bridge/SkAndroidCodec_rust.cpp",
       "src/rust_bridge/SkCodecCore_rust.cpp",
       "src/rust_bridge/SkSwizzler_rust.cpp",
+    ]
+  }
+
+  if (skia_rust_codec_meta) {
+    sources -= [
+      "//src/codec/SkCodecColorProfile.cpp",
+      "//src/codec/SkExif.cpp",
+      "//src/codec/SkGainmapInfo.cpp",
+      "//src/codec/SkHdrAgtm.cpp",
+      "//src/codec/SkHdrAgtmParse.cpp",
+      "//src/codec/SkHdrMetadata.cpp",
+      "//src/codec/SkParseEncodedOrigin.cpp",
+      "//src/codec/SkTiffUtility.cpp",
+      "//src/encode/SkICC.cpp",
+    ]
+    sources += [
+      "src/rust_bridge/SkCodecMeta_rust.cpp",
+      "src/rust_bridge/SkHdrMetadata_rust.cpp",
+      "src/rust_bridge/SkICC_rust.cpp",
     ]
   }
 
