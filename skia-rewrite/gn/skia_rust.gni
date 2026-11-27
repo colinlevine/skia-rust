@@ -4,5 +4,36 @@
 #   - Phase 1 (CPU raster backend, 19/19 modules, 314 C++ files): unconditional.
 #     Use git tag `phase1-pre-cleanup` if per-module Phase 1 C++/Rust toggles are ever needed.
 #
-# Upcoming phases (Phase 2 Codecs, Phase 3 SkSL, Phase 4 GPU, Phase 5 PDF/SVG/modules)
-# will add their per-module `skia_rust_<module>` toggles here while in flight.
+# Active phase: Phase 2 (Image Codecs & Encoders, `src/codec/`, `src/encode/`).
+# Each module starts `false` and is flipped to `true` in the commit that lands and verifies it.
+# All Phase 2 toggles are removed during Phase 2 post-phase cleanup (PORTING.md Section 6).
+
+declare_args() {
+  # P2.1: skia-rs-codec-core (SkCodec, SkEncodedInfo, SkColorPalette, SkSampler,
+  #       SkSwizzler, SkMaskSwizzler, SkPixmapUtils, SkCodecImageGenerator,
+  #       SkImageGenerator_FromEncoded, SkAndroidCodec*, SkSampledCodec, SkEncoder)
+  skia_rust_codec_core = false
+
+  # P2.2: skia-rs-codec-meta (SkExif, SkTiffUtility, SkParseEncodedOrigin,
+  #       SkCodecColorProfile, SkGainmapInfo, SkHdrMetadata, SkHdrAgtm*, SkXmp, SkICC)
+  skia_rust_codec_meta = false
+
+  # P2.3: skia-rs-codec-bmp (SkBmp*Codec, SkWbmpCodec, SkIcoCodec)
+  skia_rust_codec_bmp = false
+
+  # P2.4: skia-rs-codec-png (SkPngCodecBase, SkPngCompositeChunkReader, SkPngCodec,
+  #       SkPngEncoderBase, SkPngEncoderImpl)
+  skia_rust_codec_png = false
+
+  # P2.5: skia-rs-codec-jpeg (SkJpeg*Codec/Mgr/Metadata/MPF/SegmentScan/Xmp/Encoder/Gainmap)
+  skia_rust_codec_jpeg = false
+
+  # P2.6: skia-rs-codec-webp (SkWebpCodec, SkWebpEncoderImpl)
+  skia_rust_codec_webp = false
+
+  # P2.7: skia-rs-codec-gif (SkWuffsCodec)
+  skia_rust_codec_gif = false
+
+  # P2.8: skia-rs-codec-raw (SkRawCodec)
+  skia_rust_codec_raw = false
+}

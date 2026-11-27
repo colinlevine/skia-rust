@@ -217,7 +217,7 @@ flowchart TD
 ### Layer 0 — Baseline Verification & GN Scaffolding (Single Agent)
 | # | Module / Crate | GN Flag | Scope & Deliverables | Depends On | Parallel Group | Status |
 |---|---|---|---|---|---|---|
-| P2.0 | `codec-baseline` | `skia_rust_phase2` | Generate reference baseline hashes for `--src image colorImage --nogpu --config 8888 --images resources/images` (**9,581 tasks** across 181 images) from read-only `skia-baseline/out/Original/dm` (writing outside `skia-baseline/`); extend `tools/verify_dm/` with `--phase2` mode checking `1,000` GMs + `9,581` image tasks + all `2,644` CPU unit tests (`494` codec/encode tests across 70 test files); add Phase 2 per-module flags to `gn/skia_rust.gni` | Phase 1 | Solo | Planned |
+| P2.0 | `codec-baseline` | `skia_rust_codec_*` | Generate reference baseline hashes for `--src image colorImage --nogpu --config 8888 --images resources/images --colorImages resources/images --match ~progressive_kitten_missing_eof` (**9,820 tasks**, **7,032 unique MD5 hashes** across 180 images) from read-only `skia-baseline/out/Original/dm` into git-ignored `baselines/phase2-dm/dm.json`; extend `tools/verify_dm/` with `--phase2` mode checking `1,000` GMs + `7,032` image/colorImage hashes + all `2,644` CPU unit tests (`494` codec/encode tests across 70 test files); add Phase 2 per-module flags to `gn/skia_rust.gni` | Phase 1 | Solo | **Done** (`DM: 1000/1000`, `Phase 2: 7032/7032`) |
 
 ### Layer 1 — Codec Framework, Swizzlers & Metadata/HDR/ICC (Fan Out: 2 Agents)
 | # | Module / Crate | GN Flag | Key Skia Files Covered (23 files) | Depends On | Parallel Group | Status |

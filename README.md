@@ -4,20 +4,20 @@ A safe Rust rewrite of Google's [Skia](https://skia.org/) 2D graphics library, v
 
 ## Progress
 
-> **Current Step:** **Phase 1 Complete (`phase1-complete`), Phase 2 Planned!** — All `19/19` CPU raster backend modules (`314` C++ files) are ported to `18` safe Rust (`#![forbid(unsafe_code)]`) crates, verified (`DM: 1000/1000 match`, `2644/2644` CPU unit tests, `427/427` Rust tests), cleaned up (314 replaced `.cpp` files & toggles removed), benchmarked in **[`BENCHMARKS.md`](BENCHMARKS.md)** (`-6.9%` GM runtime, `-5.9%` clean `libskia.a` build, `-4.0%` clean `dm` build), and tagged `phase1-complete`. The **Phase 2 (Image Codecs)** plan (`9` modules, `62` files) is finalized in **[`PORTING.md`](PORTING.md)** — ready to start `P2.0` upon approval.
+> **Current Step:** **Phase 2 In Progress (`1/9` modules)** — `P2.0` codec baseline (`7,032/7,032` image/colorImage hashes across `9,820` tasks + `1,000/1,000` GMs + `2,644/2,644` CPU unit tests) and Phase 2 GN scaffolding are live; starting Layer 1 (`skia-rs-codec-core` & `skia-rs-codec-meta`). Phase 1 (`phase1-complete`) is 100% complete (`314` C++ files replaced by `18` safe Rust crates, benchmarked in **[`BENCHMARKS.md`](BENCHMARKS.md)**).
 >
 > Full dependency graph & module status: **[`PORTING.md`](PORTING.md)** | Performance A/B report: **[`BENCHMARKS.md`](BENCHMARKS.md)**
 
 ```text
 Phase 1 (CPU Raster 8888):  [####################]  19/19   modules (100.0%) - Complete (tagged phase1-complete)
-Phase 2 (Image Codecs):     [--------------------]   0/9    modules (  0.0%) - Planned (ready for P2.0)
+Phase 2 (Image Codecs):     [##------------------]   1/9    modules ( 11.1%) - In Progress (P2.0 Done; Layer 1 next)
 Overall Skia Rewrite:       [####----------------] 314/1427 files   ( 22.0%) - Phases completed: 1/6
 ```
 
 | Phase | Scope | Files Ported | Share of Skia | Status |
 |---|---|---|---|---|
 | **Phase 1** | CPU raster backend (`config 8888`) | `314 / 314` (`19/19` modules) | `22.0%` | **Complete** (`DM: 1000/1000`, `phase1-complete`, [`BENCHMARKS.md`](BENCHMARKS.md)) |
-| **Phase 2** | Image codecs (`src/codec/`, `src/encode/`) | `0 / 62` (`0/9` modules) | `4.3%` | **Planned** ([`PORTING.md`](PORTING.md), ready for `P2.0`) |
+| **Phase 2** | Image codecs (`src/codec/`, `src/encode/`) | `0 / 62` (`1/9` modules) | `4.3%` | **In Progress** (`P2.0` Done: `7032/7032` image hashes) |
 | **Phase 3** | SkSL shader compiler & `SkRuntimeEffect` (`src/sksl/`, `SkRuntime*`) | `0 / 128` | `9.0%` | Pending |
 | **Phase 4** | GPU backends (Ganesh, then Graphite; `src/gpu/`, `src/text/gpu/`) | `0 / 559` | `39.2%` | Pending |
 | **Phase 5** | PDF, SVG, XML, XPS & `modules/` | `0 / 248` | `17.4%` | Pending |

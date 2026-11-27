@@ -24,6 +24,9 @@ struct Args {
     dm_bin: String,
     write_path: String,
     baseline_json: Option<PathBuf>,
+    phase2: bool,
+    phase2_only: bool,
+    phase2_baseline_json: Option<PathBuf>,
     skip_protected_check: bool,
     match_filter: Option<String>,
 }
@@ -40,6 +43,9 @@ fn parse_args() -> Result<Args, String> {
         dm_bin: "out/Rust/dm".to_string(),
         write_path: "out/dm-rust".to_string(),
         baseline_json: None,
+        phase2: false,
+        phase2_only: false,
+        phase2_baseline_json: None,
         skip_protected_check: false,
         match_filter: None,
     };
@@ -60,6 +66,18 @@ fn parse_args() -> Result<Args, String> {
                 args.baseline_json =
                     Some(PathBuf::from(it.next().ok_or("--baseline-json requires a value")?));
             }
+            "--phase2" => {
+                args.phase2 = true;
+            }
+            "--phase2-only" => {
+                args.phase2 = true;
+                args.phase2_only = true;
+            }
+            "--phase2-baseline-json" => {
+                args.phase2_baseline_json = Some(PathBuf::from(
+                    it.next().ok_or("--phase2-baseline-json requires a value")?,
+                ));
+            }
             "--skip-protected-check" => {
                 args.skip_protected_check = true;
             }
@@ -69,7 +87,8 @@ fn parse_args() -> Result<Args, String> {
             "--help" | "-h" => {
                 println!(
                     "Usage: verify-dm [--repo-root PATH] [--dm-bin REL] [--write-path REL] \
-                     [--baseline-json PATH] [--match PATTERN] [--skip-protected-check]"
+                     [--baseline-json PATH] [--phase2] [--phase2-only] \
+                     [--phase2-baseline-json PATH] [--match PATTERN] [--skip-protected-check]"
                 );
                 std::process::exit(0);
             }
@@ -208,18 +227,21 @@ fn check_protected_paths(repo_root: &Path) -> Result<(), String> {
     Ok(())
 }
 
-/// Read `dm_flags` string value from `BASELINE.toml`.
-fn read_dm_flags(baseline_toml: &Path) -> Result<String, String> {
+/// Read a quoted string key from `BASELINE.toml`.
+fn read_toml_str(baseline_toml: &Path, key: &str) -> Result<String, String> {
     let text = fs::read_to_string(baseline_toml)
         .map_err(|e| format!("failed to read {}: {e}", baseline_toml.display()))?;
     for raw_line in text.lines() {
         let line = raw_line.trim();
-        if line.starts_with('#') || !line.starts_with("dm_flags") {
+        if line.starts_with('#') || !line.starts_with(key) {
             continue;
         }
-        let Some((_, rhs)) = line.split_once('=') else {
+        let Some((lhs, rhs)) = line.split_once('=') else {
             continue;
         };
+        if lhs.trim() != key {
+            continue;
+        }
         let rhs = rhs.trim();
         if let Some(rest) = rhs.strip_prefix('"') {
             if let Some(end) = rest.find('"') {
@@ -227,7 +249,7 @@ fn read_dm_flags(baseline_toml: &Path) -> Result<String, String> {
             }
         }
     }
-    Err(format!("dm_flags not found in {}", baseline_toml.display()))
+    Err(format!("{key} not found in {}", baseline_toml.display()))
 }
 
 /// Minimal strict JSON parser for Skia `dm.json` (`results[*].{key.{config,source_type,name}, md5}`).
@@ -408,7 +430,7 @@ impl<'a> JsonParser<'a> {
     }
 }
 
-type DmKey = (String, String, String);
+type DmKey = (String, String, String, String);
 
 fn get_str<'a>(obj: &'a BTreeMap<String, JsonVal>, key: &str) -> Option<&'a str> {
     match obj.get(key) {
@@ -434,23 +456,24 @@ fn load_dm_hashes(path: &Path) -> Result<BTreeMap<DmKey, String>, String> {
         let Some(md5) = get_str(obj, "md5") else { continue };
         let cfg = get_str(key_obj, "config").unwrap_or("").to_string();
         let src = get_str(key_obj, "source_type").unwrap_or("").to_string();
+        let opts = get_str(key_obj, "source_options").unwrap_or("").to_string();
         let name = get_str(key_obj, "name").unwrap_or("").to_string();
-        map.insert((cfg, src, name), md5.to_string());
+        map.insert((cfg, src, opts, name), md5.to_string());
     }
     Ok(map)
 }
 
-fn run() -> Result<(), String> {
-    let args = parse_args()?;
-    let repo_root = fs::canonicalize(&args.repo_root)
-        .map_err(|e| format!("invalid repo root {}: {e}", args.repo_root.display()))?;
-    let rewrite_dir = repo_root.join("skia-rewrite");
-
-    if !args.skip_protected_check {
-        check_protected_paths(&repo_root)?;
-    }
-
-    let raw_flags = read_dm_flags(&repo_root.join("BASELINE.toml"))?;
+fn run_and_verify_suite(
+    label: &str,
+    repo_root: &Path,
+    rewrite_dir: &Path,
+    dm_bin: &Path,
+    raw_flags: &str,
+    write_path_rel: &str,
+    ref_json: &Path,
+    match_filter: Option<&str>,
+    skip_matching_pngs: bool,
+) -> Result<(), String> {
     let tokens: Vec<&str> = raw_flags.split_whitespace().collect();
     let mut dm_flags: Vec<String> = Vec::new();
     let mut i = 0;
@@ -463,39 +486,56 @@ fn run() -> Result<(), String> {
         i += 1;
     }
 
-    let write_dir = rewrite_dir.join(&args.write_path);
+    let write_dir = rewrite_dir.join(write_path_rel);
     if write_dir.starts_with(repo_root.join("skia-baseline")) {
         return Err("--write-path must NEVER point inside skia-baseline/".to_string());
     }
     fs::create_dir_all(&write_dir)
         .map_err(|e| format!("failed to create {}: {e}", write_dir.display()))?;
 
+    let ref_map = load_dm_hashes(ref_json)?;
+
     dm_flags.push("--writePath".to_string());
-    dm_flags.push(args.write_path.clone());
-    if let Some(m) = &args.match_filter {
-        dm_flags.push("--match".to_string());
-        dm_flags.push(m.clone());
+    dm_flags.push(write_path_rel.to_string());
+
+    if skip_matching_pngs {
+        // Tell DM not to write PNG files for hashes already matching the baseline
+        // (dm.json still records every result), avoiding gigabytes of redundant PNG I/O.
+        let mut unique_hashes: BTreeSet<&str> = BTreeSet::new();
+        for md5 in ref_map.values() {
+            unique_hashes.insert(md5.as_str());
+        }
+        let hashes_file = write_dir.join("uninteresting_hashes.txt");
+        let mut buf = String::with_capacity(unique_hashes.len() * 33);
+        for h in unique_hashes {
+            buf.push_str(h);
+            buf.push('\n');
+        }
+        fs::write(&hashes_file, buf)
+            .map_err(|e| format!("failed to write {}: {e}", hashes_file.display()))?;
+        dm_flags.push("--uninterestingHashesFile".to_string());
+        dm_flags.push(hashes_file.to_string_lossy().into_owned());
     }
 
-    let dm_bin = rewrite_dir.join(&args.dm_bin);
-    println!("Running: {} {}", dm_bin.display(), dm_flags.join(" "));
-    let status = Command::new(&dm_bin)
+    if let Some(m) = match_filter {
+        dm_flags.push("--match".to_string());
+        dm_flags.push(m.to_string());
+    }
+
+    println!("Running ({label}): {} {}", dm_bin.display(), dm_flags.join(" "));
+    let status = Command::new(dm_bin)
         .args(&dm_flags)
-        .current_dir(&rewrite_dir)
+        .current_dir(rewrite_dir)
         .status()
         .map_err(|e| format!("failed to execute {}: {e}", dm_bin.display()))?;
     if !status.success() {
-        return Err(format!("DM exited with status {status}"));
+        return Err(format!("{label}: DM exited with status {status}"));
     }
 
-    let ref_json = args
-        .baseline_json
-        .unwrap_or_else(|| repo_root.join("skia-baseline/out/dm/dm.json"));
     let cur_json = write_dir.join("dm.json");
-    let ref_map = load_dm_hashes(&ref_json)?;
     let cur_map = load_dm_hashes(&cur_json)?;
 
-    if args.match_filter.is_some() {
+    if match_filter.is_some() {
         let mut matched = 0usize;
         let mut mismatched = Vec::new();
         for (k, actual) in &cur_map {
@@ -507,12 +547,12 @@ fn run() -> Result<(), String> {
                 }
             }
         }
-        println!("Filtered DM: {matched}/{} match", cur_map.len());
+        println!("Filtered {label}: {matched}/{} match", cur_map.len());
         if !mismatched.is_empty() {
             for (k, expected, actual) in mismatched.iter().take(20) {
                 eprintln!("  MISMATCH {k:?}: expected {expected}, got {actual}");
             }
-            return Err(format!("{} filtered DM mismatches", mismatched.len()));
+            return Err(format!("{} filtered {label} mismatches", mismatched.len()));
         }
         return Ok(());
     }
@@ -531,7 +571,7 @@ fn run() -> Result<(), String> {
     let ref_keys: BTreeSet<&DmKey> = ref_map.keys().collect();
     let extra: Vec<&DmKey> = cur_map.keys().filter(|k| !ref_keys.contains(k)).collect();
 
-    println!("DM: {matched}/{total} match");
+    println!("{label}: {matched}/{total} match");
     if !missing.is_empty() {
         eprintln!("  MISSING ({}): {:?}", missing.len(), &missing[..missing.len().min(10)]);
     }
@@ -549,12 +589,65 @@ fn run() -> Result<(), String> {
         Ok(())
     } else {
         Err(format!(
-            "DM verification failed: {matched}/{total} match, {} missing, {} extra, {} mismatched",
+            "{label} verification failed: {matched}/{total} match, {} missing, {} extra, {} mismatched",
             missing.len(),
             extra.len(),
             mismatched.len()
         ))
     }
+}
+
+fn run() -> Result<(), String> {
+    let args = parse_args()?;
+    let repo_root = fs::canonicalize(&args.repo_root)
+        .map_err(|e| format!("invalid repo root {}: {e}", args.repo_root.display()))?;
+    let rewrite_dir = repo_root.join("skia-rewrite");
+
+    if !args.skip_protected_check {
+        check_protected_paths(&repo_root)?;
+    }
+
+    let dm_bin = rewrite_dir.join(&args.dm_bin);
+    let baseline_toml = repo_root.join("BASELINE.toml");
+
+    if !args.phase2_only {
+        let raw_flags = read_toml_str(&baseline_toml, "dm_flags")?;
+        let ref_json = args
+            .baseline_json
+            .unwrap_or_else(|| repo_root.join("skia-baseline/out/dm/dm.json"));
+        run_and_verify_suite(
+            "DM",
+            &repo_root,
+            &rewrite_dir,
+            &dm_bin,
+            &raw_flags,
+            &args.write_path,
+            &ref_json,
+            args.match_filter.as_deref(),
+            true,
+        )?;
+    }
+
+    if args.phase2 {
+        let raw_flags = read_toml_str(&baseline_toml, "dm_phase2_flags")?;
+        let ref_json = args
+            .phase2_baseline_json
+            .unwrap_or_else(|| repo_root.join("baselines/phase2-dm/dm.json"));
+        let p2_write = format!("{}-phase2", args.write_path);
+        run_and_verify_suite(
+            "DM Phase 2 (image/colorImage)",
+            &repo_root,
+            &rewrite_dir,
+            &dm_bin,
+            &raw_flags,
+            &p2_write,
+            &ref_json,
+            args.match_filter.as_deref(),
+            true,
+        )?;
+    }
+
+    Ok(())
 }
 
 fn main() -> ExitCode {
