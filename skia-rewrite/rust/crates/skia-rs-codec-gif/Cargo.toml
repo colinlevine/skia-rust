@@ -1,0 +1,10 @@
+[package]
+name = "skia-rs-codec-gif"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+skia-rs-geometry = { path = "../skia-rs-geometry" }
+skia-rs-color = { path = "../skia-rs-color" }
+skia-rs-codec-core = { path = "../skia-rs-codec-core" }

@@ -32,7 +32,7 @@ declare_args() {
   skia_rust_codec_webp = true
 
   # P2.7: skia-rs-codec-gif (SkWuffsCodec)
-  skia_rust_codec_gif = false
+  skia_rust_codec_gif = true
 
   # P2.8: skia-rs-codec-raw (SkRawCodec)
   skia_rust_codec_raw = false

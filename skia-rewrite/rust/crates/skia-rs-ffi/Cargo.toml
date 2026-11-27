@@ -32,3 +32,4 @@ skia-rs-codec-bmp = { path = "../skia-rs-codec-bmp" }
 skia-rs-codec-png = { path = "../skia-rs-codec-png" }
 skia-rs-codec-jpeg = { path = "../skia-rs-codec-jpeg" }
 skia-rs-codec-webp = { path = "../skia-rs-codec-webp" }
+skia-rs-codec-gif = { path = "../skia-rs-codec-gif" }

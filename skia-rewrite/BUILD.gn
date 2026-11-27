@@ -2059,7 +2059,11 @@ optional("wuffs") {
     ":core",
     "//third_party/wuffs",
   ]
-  sources = [ "src/codec/SkWuffsCodec.cpp" ]
+  if (skia_rust_codec_gif) {
+    sources = [ "src/rust_bridge/SkWuffsCodec_rust.cpp" ]
+  } else {
+    sources = [ "src/codec/SkWuffsCodec.cpp" ]
+  }
 }
 
 optional("xml") {
