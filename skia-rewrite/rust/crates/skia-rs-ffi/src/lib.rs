@@ -5,6 +5,7 @@
 
 pub mod bitmap;
 pub mod canvas;
+pub mod codec_bmp;
 pub mod codec_core;
 pub mod codec_meta;
 pub mod color;

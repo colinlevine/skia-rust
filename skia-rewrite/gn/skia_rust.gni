@@ -19,7 +19,7 @@ declare_args() {
   skia_rust_codec_meta = true
 
   # P2.3: skia-rs-codec-bmp (SkBmp*Codec, SkWbmpCodec, SkIcoCodec)
-  skia_rust_codec_bmp = false
+  skia_rust_codec_bmp = true
 
   # P2.4: skia-rs-codec-png (SkPngCodecBase, SkPngCompositeChunkReader, SkPngCodec,
   #       SkPngEncoderBase, SkPngEncoderImpl)

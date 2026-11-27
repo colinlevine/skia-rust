@@ -21,6 +21,7 @@ members = [
     "crates/skia-rs-canvas",
     "crates/skia-rs-codec-core",
     "crates/skia-rs-codec-meta",
+    "crates/skia-rs-codec-bmp",
     "crates/skia-rs-ffi",
 ]
 

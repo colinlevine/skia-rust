@@ -1310,7 +1310,11 @@ optional("png_decode_common") {
     defines += [ "SK_CODEC_DECODES_PNG_WITH_RUST" ]
   }
   public = skia_codec_png_public
-  sources = [ "src/codec/SkIcoCodec.cpp" ] + skia_codec_png_base
+  if (skia_rust_codec_bmp) {
+    sources = [ "src/rust_bridge/SkIcoCodec_rust.cpp" ] + skia_codec_png_base
+  } else {
+    sources = [ "src/codec/SkIcoCodec.cpp" ] + skia_codec_png_base
+  }
 }
 
 optional("png_decode_libpng") {
@@ -2335,6 +2339,18 @@ skia_component("skia") {
       "src/rust_bridge/SkHdrMetadata_rust.cpp",
       "src/rust_bridge/SkICC_rust.cpp",
     ]
+  }
+
+  if (skia_rust_codec_bmp) {
+    sources -= [
+      "//src/codec/SkBmpBaseCodec.cpp",
+      "//src/codec/SkBmpCodec.cpp",
+      "//src/codec/SkBmpMaskCodec.cpp",
+      "//src/codec/SkBmpRLECodec.cpp",
+      "//src/codec/SkBmpStandardCodec.cpp",
+      "//src/codec/SkWbmpCodec.cpp",
+    ]
+    sources += [ "src/rust_bridge/SkBmpCodec_rust.cpp" ]
   }
 
   # TODO(fmalita): remove from skia_utils_private after clients are migrated to
