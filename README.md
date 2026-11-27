@@ -4,20 +4,20 @@ A safe Rust rewrite of Google's [Skia](https://skia.org/) 2D graphics library, v
 
 ## Progress
 
-> **Current Step:** **Phase 2 Porting Complete (`9/9` modules, `50/50` active files — awaiting Phase 2 cleanup & benchmarks)** — All 8 Phase 2 `#![forbid(unsafe_code)]` Rust crates (`skia-rs-codec-{core,meta,bmp,png,jpeg,webp,gif,raw}`) are wired and verified (`DM: 1000/1000`, `Phase 2: 7032/7032` image/colorImage hashes across `9,820` tasks, `2644/2644` CPU unit tests, `541/541` Rust crate tests); ready for Phase 2 cleanup (`phase2-pre-cleanup`, removing replaced `.cpp` files & 7 superseded upstream Bazel-Rust wrappers, clean rebuild, and Phase 2 A/B benchmarks) upon approval.
+> **Current Step:** **Phase 2 Complete (`phase2-complete`)!** — All `9/9` Phase 2 Image Codec & Encoder modules (`50` active files ported to `8` `#![forbid(unsafe_code)]` Rust crates + `10` stub/superseded files pruned; `2` disabled AVIF/JXL files deferred) are cleaned up, verified (`DM: 1000/1000`, `Phase 2: 7032/7032` image/colorImage hashes across `9,820` tasks, `2644/2644` CPU unit tests, `541/541` Rust crate tests across `26` safe Rust crates), benchmarked in **[`BENCHMARKS.md`](BENCHMARKS.md)** (`-10.7%` clean `libskia.a` build, `-5.7%` clean `dm` build, `-9.0%` `libskia.a` archive), and tagged `phase2-complete`. Ready to plan **Phase 3 (SkSL & `SkRuntimeEffect`)** upon approval.
 >
 > Full dependency graph & module status: **[`PORTING.md`](PORTING.md)** | Performance A/B report: **[`BENCHMARKS.md`](BENCHMARKS.md)**
 
 ```text
 Phase 1 (CPU Raster 8888):  [####################]  19/19   modules (100.0%) - Complete (tagged phase1-complete)
-Phase 2 (Image Codecs):     [####################]   9/9    modules (100.0%) - Ported & Verified (cleanup pending)
-Overall Skia Rewrite:       [#####---------------] 364/1427 files   ( 25.5%) - Phases completed: 1/6 (Phase 2 cleanup pending)
+Phase 2 (Image Codecs):     [####################]   9/9    modules (100.0%) - Complete (tagged phase2-complete)
+Overall Skia Rewrite:       [#####---------------] 374/1427 files   ( 26.2%) - Phases completed: 2/6
 ```
 
 | Phase | Scope | Files Ported | Share of Skia | Status |
 |---|---|---|---|---|
 | **Phase 1** | CPU raster backend (`config 8888`) | `314 / 314` (`19/19` modules) | `22.0%` | **Complete** (`DM: 1000/1000`, `phase1-complete`, [`BENCHMARKS.md`](BENCHMARKS.md)) |
-| **Phase 2** | Image codecs (`src/codec/`, `src/encode/`) | `50 / 62` (`9/9` modules; 12 disabled-by-default) | `4.3%` | **Ported & Verified** (`7032/7032` image hashes; cleanup pending) |
+| **Phase 2** | Image codecs (`src/codec/`, `src/encode/`) | `60 / 62` (`9/9` modules; 50 ported + 10 pruned, 2 disabled deferred) | `4.3%` | **Complete** (`7032/7032` image hashes, `phase2-complete`, [`BENCHMARKS.md`](BENCHMARKS.md)) |
 | **Phase 3** | SkSL shader compiler & `SkRuntimeEffect` (`src/sksl/`, `SkRuntime*`) | `0 / 128` | `9.0%` | Pending |
 | **Phase 4** | GPU backends (Ganesh, then Graphite; `src/gpu/`, `src/text/gpu/`) | `0 / 559` | `39.2%` | Pending |
 | **Phase 5** | PDF, SVG, XML, XPS & `modules/` | `0 / 248` | `17.4%` | Pending |

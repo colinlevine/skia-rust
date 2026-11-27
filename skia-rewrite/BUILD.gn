@@ -1098,14 +1098,7 @@ optional("crabbyavif") {
 optional("jpeg_mpf") {
   enabled = skia_use_jpeg_gainmaps &&
             (skia_use_libjpeg_turbo_encode || skia_use_libjpeg_turbo_decode)
-  if (skia_rust_codec_jpeg) {
-    sources = [ "src/rust_bridge/SkJpegMpf_rust.cpp" ]
-  } else {
-    sources = [
-      "src/codec/SkJpegMultiPicture.cpp",
-      "src/codec/SkJpegSegmentScan.cpp",
-    ]
-  }
+  sources = [ "src/rust_bridge/SkJpegMpf_rust.cpp" ]
 }
 
 optional("jpeg_decode") {
@@ -1113,17 +1106,7 @@ optional("jpeg_decode") {
   public_defines = [ "SK_CODEC_DECODES_JPEG" ]
 
   deps = [ "//third_party/libjpeg-turbo:libjpeg" ]
-  if (skia_rust_codec_jpeg) {
-    sources = [ "src/rust_bridge/SkJpegCodec_rust.cpp" ]
-  } else {
-    sources = [
-      "src/codec/SkJpegCodec.cpp",
-      "src/codec/SkJpegDecoderMgr.cpp",
-      "src/codec/SkJpegMetadataDecoderImpl.cpp",
-      "src/codec/SkJpegSourceMgr.cpp",
-      "src/codec/SkJpegUtility.cpp",
-    ]
-  }
+  sources = [ "src/rust_bridge/SkJpegCodec_rust.cpp" ]
   if (skia_use_jpeg_gainmaps) {
     # Theoretically this doesn't need to be public, but this allows gn_to_bp.py to see it, and seems
     # to align with other codec support. See b/265939413
@@ -1132,9 +1115,6 @@ optional("jpeg_decode") {
       ":jpeg_mpf",
       ":xml",
     ]
-    if (!skia_rust_codec_jpeg) {
-      sources += skia_codec_jpeg_xmp
-    }
   }
 }
 
@@ -1147,20 +1127,10 @@ optional("jpeg_encode") {
     "//third_party/libjpeg-turbo:libjpeg",
   ]
   public = skia_encode_jpeg_public
-  sources = skia_encode_jpeg_srcs
+  sources = skia_encode_jpeg_srcs + [ "src/rust_bridge/SkJpegEncoder_rust.cpp" ]
 
-  if (skia_rust_codec_jpeg) {
-    sources -= [
-      "//src/encode/SkJPEGWriteUtility.cpp",
-      "//src/encode/SkJpegEncoderImpl.cpp",
-    ]
-    sources += [ "src/rust_bridge/SkJpegEncoder_rust.cpp" ]
-    if (skia_use_jpeg_gainmaps) {
-      deps += [ ":jpeg_mpf" ]
-    }
-  } else if (skia_use_jpeg_gainmaps) {
+  if (skia_use_jpeg_gainmaps) {
     deps += [ ":jpeg_mpf" ]
-    sources += [ "src/encode/SkJpegGainmapEncoder.cpp" ]
   }
 }
 
@@ -1329,18 +1299,10 @@ optional("png_decode_common") {
     defines += [ "SK_CODEC_DECODES_PNG_WITH_RUST" ]
   }
   public = skia_codec_png_public
-  if (skia_rust_codec_bmp) {
-    sources = [ "src/rust_bridge/SkIcoCodec_rust.cpp" ] + skia_codec_png_base
-  } else {
-    sources = [ "src/codec/SkIcoCodec.cpp" ] + skia_codec_png_base
-  }
-  if (skia_rust_codec_png) {
-    sources -= [
-      "//src/codec/SkPngCodecBase.cpp",
-      "//src/codec/SkPngCompositeChunkReader.cpp",
-    ]
-    sources += [ "src/rust_bridge/SkPngCodecBase_rust.cpp" ]
-  }
+  sources = [
+    "src/rust_bridge/SkIcoCodec_rust.cpp",
+    "src/rust_bridge/SkPngCodecBase_rust.cpp",
+  ] + skia_codec_png_base
 }
 
 optional("png_decode_libpng") {
@@ -1355,11 +1317,7 @@ optional("png_decode_libpng") {
     ":png_decode_common",
     "//third_party/libpng",
   ]
-  sources = skia_codec_libpng_srcs
-  if (skia_rust_codec_png) {
-    sources -= [ "//src/codec/SkPngCodec.cpp" ]
-    sources += [ "src/rust_bridge/SkPngCodec_rust.cpp" ]
-  }
+  sources = skia_codec_libpng_srcs + [ "src/rust_bridge/SkPngCodec_rust.cpp" ]
 
   # Export this so fiddles could decode png using libpng
   public = skia_codec_libpng_public
@@ -1367,11 +1325,7 @@ optional("png_decode_libpng") {
 
 optional("png_encode_common") {
   enabled = skia_use_libpng_encode || skia_use_rust_png_encode
-  sources = skia_encode_png_base
-  if (skia_rust_codec_png) {
-    sources -= [ "//src/encode/SkPngEncoderBase.cpp" ]
-    sources += [ "src/rust_bridge/SkPngEncoderBase_rust.cpp" ]
-  }
+  sources = skia_encode_png_base + [ "src/rust_bridge/SkPngEncoderBase_rust.cpp" ]
 }
 
 optional("png_encode_libpng") {
@@ -1386,11 +1340,7 @@ optional("png_encode_libpng") {
     ":png_encode_common",
     "//third_party/libpng",
   ]
-  sources = skia_encode_libpng_srcs
-  if (skia_rust_codec_png) {
-    sources -= [ "//src/encode/SkPngEncoderImpl.cpp" ]
-    sources += [ "src/rust_bridge/SkPngEncoder_rust.cpp" ]
-  }
+  sources = skia_encode_libpng_srcs + [ "src/rust_bridge/SkPngEncoder_rust.cpp" ]
 }
 
 optional("raw") {
@@ -1407,11 +1357,7 @@ optional("raw") {
   # Skia.
   configs = [ "gn/portable:add_exceptions" ]
 
-  if (skia_rust_codec_raw) {
-    sources = [ "src/rust_bridge/SkRawCodec_rust.cpp" ]
-  } else {
-    sources = [ "src/codec/SkRawCodec.cpp" ]
-  }
+  sources = [ "src/rust_bridge/SkRawCodec_rust.cpp" ]
 }
 
 optional("typeface_freetype") {
@@ -2029,11 +1975,7 @@ optional("webp_decode") {
   public_defines = [ "SK_CODEC_DECODES_WEBP" ]
 
   deps = [ "//third_party/libwebp" ]
-  if (skia_rust_codec_webp) {
-    sources = [ "src/rust_bridge/SkWebpCodec_rust.cpp" ]
-  } else {
-    sources = [ "src/codec/SkWebpCodec.cpp" ]
-  }
+  sources = [ "src/rust_bridge/SkWebpCodec_rust.cpp" ]
 }
 
 optional("webp_encode") {
@@ -2045,11 +1987,7 @@ optional("webp_encode") {
     ":core",
     "//third_party/libwebp",
   ]
-  if (skia_rust_codec_webp) {
-    sources = [ "src/rust_bridge/SkWebpEncoder_rust.cpp" ]
-  } else {
-    sources = skia_encode_webp_srcs
-  }
+  sources = [ "src/rust_bridge/SkWebpEncoder_rust.cpp" ]
 }
 
 optional("wuffs") {
@@ -2063,11 +2001,7 @@ optional("wuffs") {
     ":core",
     "//third_party/wuffs",
   ]
-  if (skia_rust_codec_gif) {
-    sources = [ "src/rust_bridge/SkWuffsCodec_rust.cpp" ]
-  } else {
-    sources = [ "src/codec/SkWuffsCodec.cpp" ]
-  }
+  sources = [ "src/rust_bridge/SkWuffsCodec_rust.cpp" ]
 }
 
 optional("xml") {
@@ -2079,11 +2013,7 @@ optional("xml") {
     "//third_party/expat",
   ]
   sources = skia_xml_sources
-  if (skia_rust_codec_meta) {
-    sources += [ "src/rust_bridge/SkXmp_rust.cpp" ]
-  } else {
-    sources += skia_codec_xmp
-  }
+  sources += [ "src/rust_bridge/SkXmp_rust.cpp" ]
   sources += skia_svg_writer_sources
   sources += skia_svg_writer_public
 
@@ -2344,68 +2274,19 @@ skia_component("skia") {
   sources += [
     "src/android/SkAndroidFrameworkTraceUtils.cpp",
     "src/android/SkAndroidFrameworkUtils.cpp",
-    "src/codec/SkAndroidCodec.cpp",
-    "src/codec/SkAndroidCodecAdapter.cpp",
-    "src/codec/SkSampledCodec.cpp",
     "src/ports/SkDiscardableMemory_none.cpp",
     "src/ports/SkMemory_malloc.cpp",
     "src/sfnt/SkOTTable_name.cpp",
     "src/sfnt/SkOTUtils.cpp",
+    # Phase 2 unconditional safe Rust codec & metadata FFI bridge shims (:skia)
+    "src/rust_bridge/SkAndroidCodec_rust.cpp",
+    "src/rust_bridge/SkBmpCodec_rust.cpp",
+    "src/rust_bridge/SkCodecCore_rust.cpp",
+    "src/rust_bridge/SkCodecMeta_rust.cpp",
+    "src/rust_bridge/SkHdrMetadata_rust.cpp",
+    "src/rust_bridge/SkICC_rust.cpp",
+    "src/rust_bridge/SkSwizzler_rust.cpp",
   ]
-
-  if (skia_rust_codec_core) {
-    sources -= [
-      "src/codec/SkAndroidCodec.cpp",
-      "src/codec/SkAndroidCodecAdapter.cpp",
-      "src/codec/SkSampledCodec.cpp",
-      "//src/codec/SkCodec.cpp",
-      "//src/codec/SkCodecImageGenerator.cpp",
-      "//src/codec/SkColorPalette.cpp",
-      "//src/codec/SkEncodedInfo.cpp",
-      "//src/codec/SkImageGenerator_FromEncoded.cpp",
-      "//src/codec/SkMaskSwizzler.cpp",
-      "//src/codec/SkPixmapUtils.cpp",
-      "//src/codec/SkSampler.cpp",
-      "//src/codec/SkSwizzler.cpp",
-      "//src/encode/SkEncoder.cpp",
-    ]
-    sources += [
-      "src/rust_bridge/SkAndroidCodec_rust.cpp",
-      "src/rust_bridge/SkCodecCore_rust.cpp",
-      "src/rust_bridge/SkSwizzler_rust.cpp",
-    ]
-  }
-
-  if (skia_rust_codec_meta) {
-    sources -= [
-      "//src/codec/SkCodecColorProfile.cpp",
-      "//src/codec/SkExif.cpp",
-      "//src/codec/SkGainmapInfo.cpp",
-      "//src/codec/SkHdrAgtm.cpp",
-      "//src/codec/SkHdrAgtmParse.cpp",
-      "//src/codec/SkHdrMetadata.cpp",
-      "//src/codec/SkParseEncodedOrigin.cpp",
-      "//src/codec/SkTiffUtility.cpp",
-      "//src/encode/SkICC.cpp",
-    ]
-    sources += [
-      "src/rust_bridge/SkCodecMeta_rust.cpp",
-      "src/rust_bridge/SkHdrMetadata_rust.cpp",
-      "src/rust_bridge/SkICC_rust.cpp",
-    ]
-  }
-
-  if (skia_rust_codec_bmp) {
-    sources -= [
-      "//src/codec/SkBmpBaseCodec.cpp",
-      "//src/codec/SkBmpCodec.cpp",
-      "//src/codec/SkBmpMaskCodec.cpp",
-      "//src/codec/SkBmpRLECodec.cpp",
-      "//src/codec/SkBmpStandardCodec.cpp",
-      "//src/codec/SkWbmpCodec.cpp",
-    ]
-    sources += [ "src/rust_bridge/SkBmpCodec_rust.cpp" ]
-  }
 
   # TODO(fmalita): remove from skia_utils_private after clients are migrated to
   # skia_clipstack_utils_sources

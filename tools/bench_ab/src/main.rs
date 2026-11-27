@@ -379,6 +379,8 @@ fn bench_exec(cfg: &Config) -> Result<(), String> {
             let b_write = cfg.tmp_root.join(format!("exec-base-{i}"));
             if needs_write {
                 let _ = fs::remove_dir_all(&b_write);
+                fs::create_dir_all(&b_write)
+                    .map_err(|e| format!("mkdir {}: {e}", b_write.display()))?;
                 b_cmd.arg("--writePath").arg(&b_write);
             }
             let (dt, out) = run_capture(&mut b_cmd)?;
@@ -393,6 +395,8 @@ fn bench_exec(cfg: &Config) -> Result<(), String> {
             let r_write = cfg.tmp_root.join(format!("exec-rust-{i}"));
             if needs_write {
                 let _ = fs::remove_dir_all(&r_write);
+                fs::create_dir_all(&r_write)
+                    .map_err(|e| format!("mkdir {}: {e}", r_write.display()))?;
                 r_cmd.arg("--writePath").arg(&r_write);
             }
             let (dt, out) = run_capture(&mut r_cmd)?;
