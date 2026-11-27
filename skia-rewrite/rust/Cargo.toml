@@ -19,6 +19,7 @@ members = [
     "crates/skia-rs-text",
     "crates/skia-rs-picture",
     "crates/skia-rs-canvas",
+    "crates/skia-rs-codec-core",
     "crates/skia-rs-ffi",
 ]
 

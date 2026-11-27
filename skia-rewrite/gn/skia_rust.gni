@@ -12,7 +12,7 @@ declare_args() {
   # P2.1: skia-rs-codec-core (SkCodec, SkEncodedInfo, SkColorPalette, SkSampler,
   #       SkSwizzler, SkMaskSwizzler, SkPixmapUtils, SkCodecImageGenerator,
   #       SkImageGenerator_FromEncoded, SkAndroidCodec*, SkSampledCodec, SkEncoder)
-  skia_rust_codec_core = false
+  skia_rust_codec_core = true
 
   # P2.2: skia-rs-codec-meta (SkExif, SkTiffUtility, SkParseEncodedOrigin,
   #       SkCodecColorProfile, SkGainmapInfo, SkHdrMetadata, SkHdrAgtm*, SkXmp, SkICC)

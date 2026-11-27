@@ -2291,6 +2291,29 @@ skia_component("skia") {
     "src/sfnt/SkOTUtils.cpp",
   ]
 
+  if (skia_rust_codec_core) {
+    sources -= [
+      "src/codec/SkAndroidCodec.cpp",
+      "src/codec/SkAndroidCodecAdapter.cpp",
+      "src/codec/SkSampledCodec.cpp",
+      "//src/codec/SkCodec.cpp",
+      "//src/codec/SkCodecImageGenerator.cpp",
+      "//src/codec/SkColorPalette.cpp",
+      "//src/codec/SkEncodedInfo.cpp",
+      "//src/codec/SkImageGenerator_FromEncoded.cpp",
+      "//src/codec/SkMaskSwizzler.cpp",
+      "//src/codec/SkPixmapUtils.cpp",
+      "//src/codec/SkSampler.cpp",
+      "//src/codec/SkSwizzler.cpp",
+      "//src/encode/SkEncoder.cpp",
+    ]
+    sources += [
+      "src/rust_bridge/SkAndroidCodec_rust.cpp",
+      "src/rust_bridge/SkCodecCore_rust.cpp",
+      "src/rust_bridge/SkSwizzler_rust.cpp",
+    ]
+  }
+
   # TODO(fmalita): remove from skia_utils_private after clients are migrated to
   # skia_clipstack_utils_sources
   sources -= skia_clipstack_utils_sources
