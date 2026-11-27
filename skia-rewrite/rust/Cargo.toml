@@ -26,6 +26,7 @@ members = [
     "crates/skia-rs-codec-jpeg",
     "crates/skia-rs-codec-webp",
     "crates/skia-rs-codec-gif",
+    "crates/skia-rs-codec-raw",
     "crates/skia-rs-ffi",
 ]
 

@@ -1407,7 +1407,11 @@ optional("raw") {
   # Skia.
   configs = [ "gn/portable:add_exceptions" ]
 
-  sources = [ "src/codec/SkRawCodec.cpp" ]
+  if (skia_rust_codec_raw) {
+    sources = [ "src/rust_bridge/SkRawCodec_rust.cpp" ]
+  } else {
+    sources = [ "src/codec/SkRawCodec.cpp" ]
+  }
 }
 
 optional("typeface_freetype") {

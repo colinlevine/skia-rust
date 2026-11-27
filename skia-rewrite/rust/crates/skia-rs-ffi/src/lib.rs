@@ -11,6 +11,7 @@ pub mod codec_gif;
 pub mod codec_jpeg;
 pub mod codec_meta;
 pub mod codec_png;
+pub mod codec_raw;
 pub mod codec_webp;
 pub mod color;
 pub mod colorfilters;

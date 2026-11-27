@@ -35,5 +35,5 @@ declare_args() {
   skia_rust_codec_gif = true
 
   # P2.8: skia-rs-codec-raw (SkRawCodec)
-  skia_rust_codec_raw = false
+  skia_rust_codec_raw = true
 }

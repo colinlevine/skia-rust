@@ -212,9 +212,9 @@ flowchart TD
 
 ---
 
-## Phase 2: Proposed Module Porting Order & Status Tracker
+## Phase 2: Module Porting Order & Status Tracker *(8 unique subagents + 1 coordinator = 9 logical agents, max 2 concurrent; 0 restarts)*
 
-### Layer 0 — Baseline Verification & GN Scaffolding (Single Agent)
+### Layer 0 — Baseline Verification & GN Scaffolding (Coordinator, 0 Subagents)
 | # | Module / Crate | GN Flag | Scope & Deliverables | Depends On | Parallel Group | Status |
 |---|---|---|---|---|---|---|
 | P2.0 | `codec-baseline` | `skia_rust_codec_*` | Generate reference baseline hashes for `--src image colorImage --nogpu --config 8888 --images resources/images --colorImages resources/images --match ~progressive_kitten_missing_eof` (**9,820 tasks**, **7,032 unique MD5 hashes** across 180 images) from read-only `skia-baseline/out/Original/dm` into git-ignored `baselines/phase2-dm/dm.json`; extend `tools/verify_dm/` with `--phase2` mode checking `1,000` GMs + `7,032` image/colorImage hashes + all `2,644` CPU unit tests (`494` codec/encode tests across 70 test files); add Phase 2 per-module flags to `gn/skia_rust.gni` | Phase 1 | Solo | **Done** (`DM: 1000/1000`, `Phase 2: 7032/7032`) |
@@ -233,7 +233,7 @@ flowchart TD
 | P2.5 | `skia-rs-codec-jpeg` | `skia_rust_codec_jpeg` | **11 files (+ `SkJpegEncoder_none`):** `SkJpegCodec`, `SkJpegDecoderMgr`, `SkJpegMetadataDecoderImpl`, `SkJpegMultiPicture`, `SkJpegSegmentScan`, `SkJpegSourceMgr`, `SkJpegUtility`, `SkJpegXmp`, `SkJPEGWriteUtility`, `SkJpegEncoderImpl`, `SkJpegGainmapEncoder` *(pure Rust segment scanner, MPF, XMP, metadata & gainmap logic; thin `third_party/libjpeg-turbo` IDCT/Huffman boundary for bit-exact parity)* | P2.1, P2.2 | Wave C (2-way) | **Done** (`DM: 1000/1000`, `Phase 2: 7032/7032`) |
 | P2.6 | `skia-rs-codec-webp` | `skia_rust_codec_webp` | **2 files (+ `SkWebpEncoder_none`):** `SkWebpCodec`, `SkWebpEncoderImpl` *(safe Rust animation/frame/color/swizzle/encode state machine; thin `third_party/libwebp` boundary)* | P2.1, P2.2 | Wave C (2-way) | **Done** (`DM: 1000/1000`, `Phase 2: 7032/7032`) |
 | P2.7 | `skia-rs-codec-gif` | `skia_rust_codec_gif` | **1 file:** `SkWuffsCodec` *(safe Rust GIF frame holder, disposal, incremental/scaled decode state machine; thin `third_party/wuffs` boundary)* | P2.1, P2.2 | Wave D (2-way) | **Done** (`DM: 1000/1000`, `Phase 2: 7032/7032`) |
-| P2.8 | `skia-rs-codec-raw` | `skia_rust_codec_raw` | **1 file:** `SkRawCodec` *(safe Rust RAW/DNG orientation, dimension, color/swizzle & preview selection; thin `third_party/{dng_sdk,piex}` boundary)* | P2.1, P2.2, P2.5 | Wave D (2-way) | Planned |
+| P2.8 | `skia-rs-codec-raw` | `skia_rust_codec_raw` | **1 file:** `SkRawCodec` *(safe Rust RAW/DNG orientation, dimension, color/swizzle & preview selection; thin `third_party/{dng_sdk,piex}` boundary)* | P2.1, P2.2, P2.5 | Wave D (2-way) | **Done** (`DM: 1000/1000`, `Phase 2: 7032/7032`) |
 
 ### Disabled-by-Default Files in `src/codec/` & `src/encode/` (12 of 62 files)
 - **3 `*_none.cpp` stubs** (`SkPngEncoder_none.cpp`, `SkJpegEncoder_none.cpp`, `SkWebpEncoder_none.cpp`): Covered alongside P2.4–P2.6 and cleaned up at Phase 2 end.
