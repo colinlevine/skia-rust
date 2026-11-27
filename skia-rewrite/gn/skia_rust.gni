@@ -26,7 +26,7 @@ declare_args() {
   skia_rust_codec_png = true
 
   # P2.5: skia-rs-codec-jpeg (SkJpeg*Codec/Mgr/Metadata/MPF/SegmentScan/Xmp/Encoder/Gainmap)
-  skia_rust_codec_jpeg = false
+  skia_rust_codec_jpeg = true
 
   # P2.6: skia-rs-codec-webp (SkWebpCodec, SkWebpEncoderImpl)
   skia_rust_codec_webp = false

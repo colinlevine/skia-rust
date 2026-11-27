@@ -1098,10 +1098,14 @@ optional("crabbyavif") {
 optional("jpeg_mpf") {
   enabled = skia_use_jpeg_gainmaps &&
             (skia_use_libjpeg_turbo_encode || skia_use_libjpeg_turbo_decode)
-  sources = [
-    "src/codec/SkJpegMultiPicture.cpp",
-    "src/codec/SkJpegSegmentScan.cpp",
-  ]
+  if (skia_rust_codec_jpeg) {
+    sources = [ "src/rust_bridge/SkJpegMpf_rust.cpp" ]
+  } else {
+    sources = [
+      "src/codec/SkJpegMultiPicture.cpp",
+      "src/codec/SkJpegSegmentScan.cpp",
+    ]
+  }
 }
 
 optional("jpeg_decode") {
@@ -1109,13 +1113,17 @@ optional("jpeg_decode") {
   public_defines = [ "SK_CODEC_DECODES_JPEG" ]
 
   deps = [ "//third_party/libjpeg-turbo:libjpeg" ]
-  sources = [
-    "src/codec/SkJpegCodec.cpp",
-    "src/codec/SkJpegDecoderMgr.cpp",
-    "src/codec/SkJpegMetadataDecoderImpl.cpp",
-    "src/codec/SkJpegSourceMgr.cpp",
-    "src/codec/SkJpegUtility.cpp",
-  ]
+  if (skia_rust_codec_jpeg) {
+    sources = [ "src/rust_bridge/SkJpegCodec_rust.cpp" ]
+  } else {
+    sources = [
+      "src/codec/SkJpegCodec.cpp",
+      "src/codec/SkJpegDecoderMgr.cpp",
+      "src/codec/SkJpegMetadataDecoderImpl.cpp",
+      "src/codec/SkJpegSourceMgr.cpp",
+      "src/codec/SkJpegUtility.cpp",
+    ]
+  }
   if (skia_use_jpeg_gainmaps) {
     # Theoretically this doesn't need to be public, but this allows gn_to_bp.py to see it, and seems
     # to align with other codec support. See b/265939413
@@ -1124,7 +1132,9 @@ optional("jpeg_decode") {
       ":jpeg_mpf",
       ":xml",
     ]
-    sources += skia_codec_jpeg_xmp
+    if (!skia_rust_codec_jpeg) {
+      sources += skia_codec_jpeg_xmp
+    }
   }
 }
 
@@ -1139,7 +1149,16 @@ optional("jpeg_encode") {
   public = skia_encode_jpeg_public
   sources = skia_encode_jpeg_srcs
 
-  if (skia_use_jpeg_gainmaps) {
+  if (skia_rust_codec_jpeg) {
+    sources -= [
+      "//src/encode/SkJPEGWriteUtility.cpp",
+      "//src/encode/SkJpegEncoderImpl.cpp",
+    ]
+    sources += [ "src/rust_bridge/SkJpegEncoder_rust.cpp" ]
+    if (skia_use_jpeg_gainmaps) {
+      deps += [ ":jpeg_mpf" ]
+    }
+  } else if (skia_use_jpeg_gainmaps) {
     deps += [ ":jpeg_mpf" ]
     sources += [ "src/encode/SkJpegGainmapEncoder.cpp" ]
   }
