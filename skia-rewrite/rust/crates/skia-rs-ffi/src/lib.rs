@@ -10,6 +10,7 @@ pub mod codec_core;
 pub mod codec_jpeg;
 pub mod codec_meta;
 pub mod codec_png;
+pub mod codec_webp;
 pub mod color;
 pub mod colorfilters;
 pub mod core_types;

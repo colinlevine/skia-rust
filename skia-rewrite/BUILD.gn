@@ -2025,7 +2025,11 @@ optional("webp_decode") {
   public_defines = [ "SK_CODEC_DECODES_WEBP" ]
 
   deps = [ "//third_party/libwebp" ]
-  sources = [ "src/codec/SkWebpCodec.cpp" ]
+  if (skia_rust_codec_webp) {
+    sources = [ "src/rust_bridge/SkWebpCodec_rust.cpp" ]
+  } else {
+    sources = [ "src/codec/SkWebpCodec.cpp" ]
+  }
 }
 
 optional("webp_encode") {
@@ -2037,7 +2041,11 @@ optional("webp_encode") {
     ":core",
     "//third_party/libwebp",
   ]
-  sources = skia_encode_webp_srcs
+  if (skia_rust_codec_webp) {
+    sources = [ "src/rust_bridge/SkWebpEncoder_rust.cpp" ]
+  } else {
+    sources = skia_encode_webp_srcs
+  }
 }
 
 optional("wuffs") {
