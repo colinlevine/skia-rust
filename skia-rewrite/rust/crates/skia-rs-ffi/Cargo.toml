@@ -29,3 +29,4 @@ skia-rs-canvas = { path = "../skia-rs-canvas" }
 skia-rs-codec-core = { path = "../skia-rs-codec-core" }
 skia-rs-codec-meta = { path = "../skia-rs-codec-meta" }
 skia-rs-codec-bmp = { path = "../skia-rs-codec-bmp" }
+skia-rs-codec-png = { path = "../skia-rs-codec-png" }

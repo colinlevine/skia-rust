@@ -23,7 +23,7 @@ declare_args() {
 
   # P2.4: skia-rs-codec-png (SkPngCodecBase, SkPngCompositeChunkReader, SkPngCodec,
   #       SkPngEncoderBase, SkPngEncoderImpl)
-  skia_rust_codec_png = false
+  skia_rust_codec_png = true
 
   # P2.5: skia-rs-codec-jpeg (SkJpeg*Codec/Mgr/Metadata/MPF/SegmentScan/Xmp/Encoder/Gainmap)
   skia_rust_codec_jpeg = false

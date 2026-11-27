@@ -1315,6 +1315,13 @@ optional("png_decode_common") {
   } else {
     sources = [ "src/codec/SkIcoCodec.cpp" ] + skia_codec_png_base
   }
+  if (skia_rust_codec_png) {
+    sources -= [
+      "//src/codec/SkPngCodecBase.cpp",
+      "//src/codec/SkPngCompositeChunkReader.cpp",
+    ]
+    sources += [ "src/rust_bridge/SkPngCodecBase_rust.cpp" ]
+  }
 }
 
 optional("png_decode_libpng") {
@@ -1330,6 +1337,10 @@ optional("png_decode_libpng") {
     "//third_party/libpng",
   ]
   sources = skia_codec_libpng_srcs
+  if (skia_rust_codec_png) {
+    sources -= [ "//src/codec/SkPngCodec.cpp" ]
+    sources += [ "src/rust_bridge/SkPngCodec_rust.cpp" ]
+  }
 
   # Export this so fiddles could decode png using libpng
   public = skia_codec_libpng_public
@@ -1338,6 +1349,10 @@ optional("png_decode_libpng") {
 optional("png_encode_common") {
   enabled = skia_use_libpng_encode || skia_use_rust_png_encode
   sources = skia_encode_png_base
+  if (skia_rust_codec_png) {
+    sources -= [ "//src/encode/SkPngEncoderBase.cpp" ]
+    sources += [ "src/rust_bridge/SkPngEncoderBase_rust.cpp" ]
+  }
 }
 
 optional("png_encode_libpng") {
@@ -1353,6 +1368,10 @@ optional("png_encode_libpng") {
     "//third_party/libpng",
   ]
   sources = skia_encode_libpng_srcs
+  if (skia_rust_codec_png) {
+    sources -= [ "//src/encode/SkPngEncoderImpl.cpp" ]
+    sources += [ "src/rust_bridge/SkPngEncoder_rust.cpp" ]
+  }
 }
 
 optional("raw") {

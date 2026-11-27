@@ -8,6 +8,7 @@ pub mod canvas;
 pub mod codec_bmp;
 pub mod codec_core;
 pub mod codec_meta;
+pub mod codec_png;
 pub mod color;
 pub mod colorfilters;
 pub mod core_types;
